@@ -49,13 +49,13 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	}
 
 	@Override
-	public Action createGoStraight(double distanceInches, double speed, double angleDegrees) {
-		return GoStraight.createGoStraightAtHeading(distanceInches, speed, angleDegrees, null, robot::getDrive, robot::getOrientation);
+	public Action createGoStraight(double distanceMeters, double speed, double angleDegrees) {
+		return GoStraight.createGoStraightAtHeading(distanceMeters, speed, angleDegrees, null, robot::getDrive, robot::getOrientation);
 	}
 
 	@Override
-	public Action createGoStraight(double distanceInches, double speed, double angleDegrees, double faceDirectionDegrees) {
-		return GoStraight.createGoStraightAtHeading(distanceInches, speed, angleDegrees, faceDirectionDegrees, robot::getDrive, robot::getOrientation);
+	public Action createGoStraight(double distanceMeters, double speed, double angleDegrees, double faceDirectionDegrees) {
+		return GoStraight.createGoStraightAtHeading(distanceMeters, speed, angleDegrees, faceDirectionDegrees, robot::getDrive, robot::getOrientation);
 	}
 
 	@Override

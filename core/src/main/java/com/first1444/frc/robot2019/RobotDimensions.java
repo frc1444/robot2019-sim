@@ -11,14 +11,14 @@ public interface RobotDimensions {
 	/**
 	 * @return The amount the hatch manipulator extends outside the <em>bumpers</em> when it is fully out, in inches
 	 */
-	double getHatchManipulatorActiveExtendDistance();
+	double getHatchManipulatorActiveExtendDistanceMeters();
 	
 	/** @return The width (excluding bumpers) of the side with the hatch manipulator*/
-	double getHatchSideWidth();
+	double getHatchSideWidthMeters();
 	/** @return The width (excluding bumpers) of the side with the cargo manipulator*/
-	double getCargoSideWidth();
+	double getCargoSideWidthMeters();
 	/** @return The depth (excluding bumpers) of the side with the hatch manipulator*/
-	double getHatchSideDepth();
+	double getHatchSideDepthMeters();
 	/** @return The depth (excluding bumpers) of the side with the cargo manipulator*/
-	double getCargoSideDepth();
+	double getCargoSideDepthMeters();
 }

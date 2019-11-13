@@ -1,10 +1,10 @@
 apply plugin: "java"
 
 sourceCompatibility = 1.11
-sourceSets.main.resources.srcDirs = ["../android/assets"]
+sourceSets.main.resources.srcDirs = ["../assets"]
 
-project.ext.mainClassName = "com.first1444.frc.robot2020.gdx.desktop.DesktopLauncher"
-project.ext.assetsDir = new File("../android/assets")
+project.ext.mainClassName = "com.first1444.frc.robot2019.gdx.desktop.DesktopLauncher"
+project.ext.assetsDir = new File("../assets")
 
 dependencies {
     implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"

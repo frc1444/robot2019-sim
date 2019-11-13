@@ -5,7 +5,8 @@ buildscript {
         junit5Version = "5.4.2"
         gdxVersion = '1.9.10'
         box2DLightsVersion = '1.4'
-        roboSimVersion = "v0.1.1"
+//        roboSimVersion = "v0.1.1"
+        roboSimVersion = "704375f44f"
     }
     repositories {
         mavenLocal()
@@ -24,7 +25,7 @@ buildscript {
 subprojects {
     apply plugin: "kotlin"
     ext { // some of the variables in here may only be specific to a single module
-        appName = "robo-sim-app"
+        appName = "robot2019-sim-app"
         gdxVersion = "1.9.10"
     }
     repositories {
@@ -56,7 +57,13 @@ project(":gdx"){
     apply plugin: "java-library"
     version = "1.0"
     dependencies {
-        implementation project(":core")
+        api project(":core") // if we change this to 'implementation', the desktop:dist jar produced stops working...
+    }
+}
+project(":wpi"){
+    apply plugin: "java"
+    dependencies {
+        api project(":core")
     }
 }
 
@@ -64,8 +71,7 @@ project(":desktop") {
     apply plugin: "java-library"
 
     dependencies {
-        implementation project(":gdx")
-
+        api project(":gdx")
     }
 }
 //project(":android"){

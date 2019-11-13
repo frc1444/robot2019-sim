@@ -32,12 +32,12 @@ public class DynamicRobotDimensions implements RobotDimensions {
 	}
 	
 	@Override
-	public double getHatchManipulatorActiveExtendDistance() {
-		return dimensions.getHatchManipulatorActiveExtendDistance();
+	public double getHatchManipulatorActiveExtendDistanceMeters() {
+		return dimensions.getHatchManipulatorActiveExtendDistanceMeters();
 	}
 	
-	@Override public double getHatchSideWidth() { return dimensions.getHatchSideWidth(); }
-	@Override public double getCargoSideWidth() { return dimensions.getCargoSideWidth(); }
-	@Override public double getHatchSideDepth() { return dimensions.getHatchSideDepth(); }
-	@Override public double getCargoSideDepth() { return dimensions.getCargoSideDepth(); }
+	@Override public double getHatchSideWidthMeters() { return dimensions.getHatchSideWidthMeters(); }
+	@Override public double getCargoSideWidthMeters() { return dimensions.getCargoSideWidthMeters(); }
+	@Override public double getHatchSideDepthMeters() { return dimensions.getHatchSideDepthMeters(); }
+	@Override public double getCargoSideDepthMeters() { return dimensions.getCargoSideDepthMeters(); }
 }

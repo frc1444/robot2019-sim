@@ -45,7 +45,7 @@ android {
         exclude "lib/armeabi/**"
     }
     defaultConfig {
-        applicationId "com.first1444.frc.robot2020.gdx"
+        applicationId "com.first1444.frc.robot2019.gdx"
         minSdkVersion 19 // if you use APIs from Java 8, make sure to change this to 24
         targetSdkVersion 28
         versionCode 1
@@ -114,5 +114,5 @@ task run(type: Exec) {
     }
 
     def adb = path + "/platform-tools/adb"
-    commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.first1444.frc.robot2020.gdx/com.first1444.frc.robot2020.gdx.AndroidLauncher'
+    commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.first1444.frc.robot2019.gdx/com.first1444.frc.robot2019.gdx.AndroidLauncher'
 }

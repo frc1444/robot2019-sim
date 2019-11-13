@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.first1444.frc.robot2020.gdx" >
+    package="com.first1444.frc.robot2019.gdx" >
 
     <application
         android:allowBackup="true"

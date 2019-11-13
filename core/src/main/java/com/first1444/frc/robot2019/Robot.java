@@ -162,10 +162,11 @@ public class Robot extends IterativeRobotAdapter {
 		soundSender = new TCPEventSender(5809);
 		
 		enabledSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
-				Actions.createRunForeverRecyclable(drive), lift, cargoIntake, climber, hatchIntake
+				lift, cargoIntake, climber, hatchIntake
 		).clearAllOnEnd(false).canRecycle(true).build();
 		
 		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder( // NOTE, without forceUpdateInOrder(true), these will not update in order
+				Actions.createRunForeverRecyclable(drive),
 				orientationSystem,
 				taskSystem,
 				Actions.createRunForever(matchScheduler),

@@ -39,14 +39,14 @@ public class TestAutonActionCreator implements AutonActionCreator {
 	}
 	
 	@Override
-	public Action createGoStraight(double distanceInches, double speed, double angleDegrees) {
-		return createLogMessageAction("Going straight for " + distanceInches + " inches at " + Constants.DECIMAL_FORMAT.format(speed)
+	public Action createGoStraight(double distanceMeters, double speed, double angleDegrees) {
+		return createLogMessageAction("Going straight for " + distanceMeters + " meters at " + Constants.DECIMAL_FORMAT.format(speed)
 				+ " with " + angleDegrees + " degrees heading.");
 	}
 	
 	@Override
-	public Action createGoStraight(double distanceInches, double speed, double angleDegrees, double faceDirectionDegrees) {
-		return createLogMessageAction("Going straight for " + distanceInches + " inches at " + Constants.DECIMAL_FORMAT.format(speed)
+	public Action createGoStraight(double distanceMeters, double speed, double angleDegrees, double faceDirectionDegrees) {
+		return createLogMessageAction("Going straight for " + distanceMeters + " meters at " + Constants.DECIMAL_FORMAT.format(speed)
 				+ " with " + angleDegrees + " degrees heading while facing " + faceDirectionDegrees + " degrees.");
 	}
 	

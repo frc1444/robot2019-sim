@@ -22,8 +22,8 @@ public interface AutonActionCreator {
 	
 	Action createTurnToOrientation(double desiredOrientation);
 	@Deprecated
-	Action createGoStraight(double distanceInches, double speed, double angleDegrees);
-	Action createGoStraight(double distanceInches, double speed, double angleDegrees, double faceDirectionDegrees);
+	Action createGoStraight(double distanceMeters, double speed, double angleDegrees);
+	Action createGoStraight(double distanceMeters, double speed, double angleDegrees, double faceDirectionDegrees);
 
 	Action createCargoShipPlaceHatchUseVision(Action failAction, Action successAction);
 	Action createCargoShipPlaceCargoUseVision(Action failAction, Action successAction);

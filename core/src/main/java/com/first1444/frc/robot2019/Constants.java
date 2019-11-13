@@ -7,6 +7,8 @@ import com.first1444.frc.util.valuemap.MutableValueMap;
 import java.text.DecimalFormat;
 import java.util.Map;
 
+import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
+
 public final class Constants {
 	
 	private Constants(){ throw new UnsupportedOperationException(); }
@@ -203,21 +205,21 @@ public final class Constants {
 		}
 		
 		@Override
-		public double getHatchManipulatorActiveExtendDistance() {
-			return 10;
+		public double getHatchManipulatorActiveExtendDistanceMeters() {
+			return inchesToMeters(10);
 		}
 		
 		@Override
-		public double getHatchSideWidth() {
-			return 31;
+		public double getHatchSideWidthMeters() {
+			return inchesToMeters(31);
 		}
-		@Override public double getCargoSideWidth() { return getHatchSideWidth(); }
+		@Override public double getCargoSideWidthMeters() { return getHatchSideWidthMeters(); }
 		
 		@Override
-		public double getHatchSideDepth() {
-			return 28;
+		public double getHatchSideDepthMeters() {
+			return inchesToMeters(28);
 		}
-		@Override public double getCargoSideDepth() { return getHatchSideDepth(); }
+		@Override public double getCargoSideDepthMeters() { return getHatchSideDepthMeters(); }
 	}
 	
 }

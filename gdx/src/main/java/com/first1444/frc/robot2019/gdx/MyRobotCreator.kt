@@ -118,7 +118,7 @@ object MyRobotCreator : RobotCreator {
         val creator = GdxControllerPartCreator(provider, true)
         val joystick = BaseStandardControllerInput(DefaultStandardControllerInputCreator(), creator, OptionValues.createImmutableBooleanOptionValue(true), OptionValues.createImmutableBooleanOptionValue(false))
         val shuffleboardMap = DefaultShuffleboardMap()
-        val reportMap = ShuffleboardReportMap(shuffleboardMap.getDebugTab().getLayout("Report Map", BuiltInLayouts.kList));
+        val reportMap = ShuffleboardReportMap(shuffleboardMap.debugTab.getLayout("Report Map", BuiltInLayouts.kList));
         val robotCreator = RunnableCreator.wrap {
             NetworkTableInstance.getDefault().startServer()
 //            VisionProvider(entity, 2.0, updateableData.clock)

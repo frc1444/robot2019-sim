@@ -16,6 +16,7 @@ import me.retrodaredevil.action.Actions;
 
 import java.util.Objects;
 
+import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
 import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
 
@@ -77,7 +78,7 @@ public class AutonomousModeCreator {
 			if(afterComplete != null)
 				throw new IllegalArgumentException("afterComplete must be null! It's: " + afterComplete);
 			actionQueue.add(actionCreator.createLogMessageAction("Cross line forward autonomous starting!"));
-			actionQueue.add(actionCreator.createGoStraight(55, .5, 90)); // cross line
+			actionQueue.add(actionCreator.createGoStraight(inchesToMeters(55), .5, 90)); // cross line
 			actionQueue.add(actionCreator.createLogMessageAction("Cross line forward autonomous ending!"));
 		} else if (autonomousType == AutonomousType.CROSS_LINE_SIDE) {
 			if(gamePieceType != null || slotLevel != null)
@@ -95,8 +96,8 @@ public class AutonomousModeCreator {
 			} else {
 				throw new IllegalArgumentException("Cross Line Side doesn't support starting position: " + startingPosition);
 			}
-			actionQueue.add(actionCreator.createGoStraight(65, .5, isLeft ? 180 : 0)); // go towards wall
-			actionQueue.add(actionCreator.createGoStraight(55, .5, 90)); // cross line
+			actionQueue.add(actionCreator.createGoStraight(inchesToMeters(65), .5, isLeft ? 180 : 0)); // go towards wall
+			actionQueue.add(actionCreator.createGoStraight(inchesToMeters(55), .5, 90)); // cross line
 		} else if (autonomousType == AutonomousType.OFF_CENTER_CARGO_SHIP) {
 			if (slotLevel != SlotLevel.LEVEL1) {
 				throw new IllegalArgumentException("Got level: " + slotLevel + " with autonomous mode " + autonomousType);
@@ -118,12 +119,12 @@ public class AutonomousModeCreator {
 			// It's about 130 inches to the cargo ship
 			
 			// go 100 inches
-			actionQueue.add(actionCreator.createGoStraight(40, .3, 90, startingOrientation)); // get off hab
-			actionQueue.add(actionCreator.createGoStraight(30, .7, 90, startingOrientation)); // drive a little
-			actionQueue.add(actionCreator.createGoStraight(30, .3, 90, startingOrientation)); // drive slower
+			actionQueue.add(actionCreator.createGoStraight(inchesToMeters(40.0), .3, 90, startingOrientation)); // get off hab
+			actionQueue.add(actionCreator.createGoStraight(inchesToMeters(30.0), .7, 90, startingOrientation)); // drive a little
+			actionQueue.add(actionCreator.createGoStraight(inchesToMeters(30.0), .3, 90, startingOrientation)); // drive slower
 			// went 100 inches
 			assert gamePieceType == GamePieceType.HATCH : "always true";
-			final double faceAngle = 90 + getManipulatorOffset(GamePieceType.HATCH); // face the manipulator towards the cargo ship
+			final double faceAngle = 90 + getManipulatorOffsetDegrees(GamePieceType.HATCH); // face the manipulator towards the cargo ship
 			if (MathUtil.minDistance(faceAngle, startingOrientation, 360) > 5) { // only rotate if we need to
 				actionQueue.add(actionCreator.createLogWarningAction("We are turning to face the target. Next time, start the robot in the correct position. faceAngle: " + faceAngle + " startingOrientation: " + startingOrientation));
 				actionQueue.add(actionCreator.createTurnToOrientation(faceAngle));
@@ -143,19 +144,19 @@ public class AutonomousModeCreator {
 				// drive a total of 30 more inches
 				actionQueue.add(new Actions.ActionMultiplexerBuilder(
 						actionCreator.createExtendHatch(), // ready position
-						actionCreator.createGoStraight(10, .3, faceAngle, faceAngle) // go forward
+						actionCreator.createGoStraight(inchesToMeters(10.0), .3, faceAngle, faceAngle) // go forward
 				).build());
-				final double hatchExtend = dimensions.getHatchManipulatorActiveExtendDistance();
-				if(hatchExtend < 20) {
-					actionQueue.add(actionCreator.createGoStraight(20 - hatchExtend, .15, faceAngle, faceAngle));
+				final double hatchExtend = dimensions.getHatchManipulatorActiveExtendDistanceMeters();
+				if(hatchExtend < inchesToMeters(20)) {
+					actionQueue.add(actionCreator.createGoStraight(inchesToMeters(20) - hatchExtend, .15, faceAngle, faceAngle));
 				}
 				actionQueue.add(actionCreator.createDropHatch());
 			}
 			if(afterComplete != null){
-				actionQueue.add(actionCreator.createGoStraight(20, .3, -90, faceAngle));
+				actionQueue.add(actionCreator.createGoStraight(inchesToMeters(20), .3, -90, faceAngle));
 				if(afterComplete == AfterComplete.PREPARE_FOR_DEFENSE){
-					actionQueue.add(actionCreator.createGoStraight(50, .3, isLeft ? 180 : 0, faceAngle));
-					actionQueue.add(actionCreator.createGoStraight(50, .3, 90, faceAngle));
+					actionQueue.add(actionCreator.createGoStraight(inchesToMeters(50), .3, isLeft ? 180 : 0, faceAngle));
+					actionQueue.add(actionCreator.createGoStraight(inchesToMeters(50), .3, 90, faceAngle));
 				} else {
 					final boolean hatch;
 					if (afterComplete == AfterComplete.GO_TO_LOADING_STATION_HATCH) {
@@ -165,11 +166,11 @@ public class AutonomousModeCreator {
 					} else {
 						throw new IllegalArgumentException("Unsupported AfterComplete: " + afterComplete);
 					}
-					actionQueue.add(actionCreator.createGoStraight(70, .3, isLeft ? 180 : 0, faceAngle));
+					actionQueue.add(actionCreator.createGoStraight(inchesToMeters(70), .3, isLeft ? 180 : 0, faceAngle));
 					final GamePieceType afterGamePieceType = hatch ? GamePieceType.HATCH : GamePieceType.CARGO;
-					final double faceDirection = getManipulatorOffset(afterGamePieceType) - 90;
+					final double faceDirection = getManipulatorOffsetDegrees(afterGamePieceType) - 90;
 					actionQueue.add(actionCreator.createTurnToOrientation(faceDirection));
-					actionQueue.add(actionCreator.createGoStraight(100, .3, -90, faceDirection));
+					actionQueue.add(actionCreator.createGoStraight(inchesToMeters(100), .3, -90, faceDirection));
 				}
 			}
 		} else if (autonomousType == AutonomousType.SIDE_CARGO_SHIP) {
@@ -190,19 +191,19 @@ public class AutonomousModeCreator {
 			final double longDistanceAngle = isLeft ? 90 + SIDE_CARGO_SHIP_LONG_DISTANCE_ANGLE : 90 - SIDE_CARGO_SHIP_LONG_DISTANCE_ANGLE;
 			
 			final double towardsCargoShipAngle = (isLeft ? 0 : 180);
-			final double faceAngle = towardsCargoShipAngle + getManipulatorOffset(gamePieceType); // face the manipulator towards the cargo ship
+			final double faceAngle = towardsCargoShipAngle + getManipulatorOffsetDegrees(gamePieceType); // face the manipulator towards the cargo ship
 			final double distanceDegreesToFaceAngle = MathUtil.minDistance(faceAngle, startingOrientation, 360); // in range [0..180]
 			
-			double distance = 212.8 - FieldDimensions.HAB_FLAT_DISTANCE - 22; //we need to go this distance // 22 is random, but I measured it
+			double distance = inchesToMeters(212.8) - FieldDimensions.HAB_FLAT_DISTANCE - inchesToMeters(22); //we need to go this distance // 22 is random, but I measured it
 			if(distanceDegreesToFaceAngle > 135 || distanceDegreesToFaceAngle < 45){ // turn 180 or turn 0
 				distance += getManipulatorSideWidth(gamePieceType) / 2.0;
 			} else {
 				distance += getManipulatorSideDepth(gamePieceType) / 2.0;
 			}
-			actionQueue.add(actionCreator.createGoStraight(40, .3, 90, startingOrientation));
-			distance -= 40;
-			actionQueue.add(actionCreator.createGoStraight(115 / sin(toRadians(longDistanceAngle)), .7, longDistanceAngle, startingOrientation));
-			distance -= 115;
+			actionQueue.add(actionCreator.createGoStraight(inchesToMeters(40.0), .3, 90, startingOrientation));
+			distance -= inchesToMeters(40);
+			actionQueue.add(actionCreator.createGoStraight(inchesToMeters(115.0) / sin(toRadians(longDistanceAngle)), .7, longDistanceAngle, startingOrientation));
+			distance -= inchesToMeters(115);
 			actionQueue.add(actionCreator.createGoStraight(distance, .3, 90, startingOrientation));
 			
 			if (distanceDegreesToFaceAngle > 5) { // only rotate if we need to
@@ -226,7 +227,7 @@ public class AutonomousModeCreator {
 					));
 				}
 			} else {
-				final Action driveAction = actionCreator.createGoStraight(20, .2, towardsCargoShipAngle, faceAngle);
+				final Action driveAction = actionCreator.createGoStraight(inchesToMeters(20.0), .2, towardsCargoShipAngle, faceAngle);
 				if(gamePieceType == GamePieceType.HATCH){
 					actionQueue.add(new Actions.ActionMultiplexerBuilder(
 							actionCreator.createExtendHatch(),
@@ -244,9 +245,9 @@ public class AutonomousModeCreator {
 				actionQueue.add(successQueue);
 			}
 			if(afterComplete != null){
-				successQueue.add(actionCreator.createGoStraight(30, .4, towardsCargoShipAngle + 180, faceAngle));
+				successQueue.add(actionCreator.createGoStraight(inchesToMeters(30.0), .4, towardsCargoShipAngle + 180, faceAngle));
 				if(afterComplete == AfterComplete.PREPARE_FOR_DEFENSE){
-					successQueue.add(actionCreator.createGoStraight(40, .3, 90, faceAngle));
+					successQueue.add(actionCreator.createGoStraight(inchesToMeters(40.0), .3, 90, faceAngle));
 				} else {
 					final boolean hatch;
 					if (afterComplete == AfterComplete.GO_TO_LOADING_STATION_HATCH) {
@@ -256,10 +257,10 @@ public class AutonomousModeCreator {
 					} else {
 						throw new IllegalArgumentException("Unsupported AfterComplete: " + afterComplete);
 					}
-					successQueue.add(actionCreator.createGoStraight(30, .4, towardsCargoShipAngle + 180, faceAngle));
-					successQueue.add(actionCreator.createGoStraight(100, .4, -90, faceAngle));
+					successQueue.add(actionCreator.createGoStraight(inchesToMeters(30), .4, towardsCargoShipAngle + 180, faceAngle));
+					successQueue.add(actionCreator.createGoStraight(inchesToMeters(100), .4, -90, faceAngle));
 					final GamePieceType afterGamePieceType = hatch ? GamePieceType.HATCH : GamePieceType.CARGO;
-					final double faceDirection = getManipulatorOffset(afterGamePieceType) - 90;
+					final double faceDirection = getManipulatorOffsetDegrees(afterGamePieceType) - 90;
 					successQueue.add(actionCreator.createTurnToOrientation(faceDirection));
 				}
 			}
@@ -278,8 +279,8 @@ public class AutonomousModeCreator {
 			} else {
 				throw new IllegalArgumentException("Side Rocket doesn't support starting position: " + startingPosition);
 			}
-			actionQueue.add(actionCreator.createGoStraight(69.56 + 6, .3, sideRocketIsLeft ? 180 : 0, startingOrientation)); // the 6 is random
-			actionQueue.add(actionCreator.createGoStraight(201.13 - 95.28 - FieldDimensions.HAB_LIP_DISTANCE - 60, .5, 90, startingOrientation)); // the 60 is random
+			actionQueue.add(actionCreator.createGoStraight(inchesToMeters(69.56 + 6), .3, sideRocketIsLeft ? 180 : 0, startingOrientation)); // the 6 is random
+			actionQueue.add(actionCreator.createGoStraight(inchesToMeters(201.13 - 95.28) - FieldDimensions.HAB_LIP_DISTANCE - inchesToMeters(60), .5, 90, startingOrientation)); // the 60 is random
 			
 			final ActionQueue successQueue = new Actions.ActionQueueBuilder(
 					Actions.createRunOnce(actionCreator.createLogMessageAction("We successfully placed something on the rocket. If you choose an AfterComplete, this should do something now"))
@@ -293,23 +294,23 @@ public class AutonomousModeCreator {
 						actionCreator.createLogWarningAction("Failed to place " + gamePieceType + " on rocket."),
 						successQueue
 				));
-				successQueue.add(actionCreator.createGoStraight(10, .3, driveAngle + 180, driveAngle));
-				successQueue.add(actionCreator.createGoStraight(20, .3, towardsCenter, driveAngle));
+				successQueue.add(actionCreator.createGoStraight(inchesToMeters(10), .3, driveAngle + 180, driveAngle));
+				successQueue.add(actionCreator.createGoStraight(inchesToMeters(20), .3, towardsCenter, driveAngle));
 			} else {
-				actionQueue.add(actionCreator.createGoStraight(60 - 1, .3, 90, startingOrientation)); // the 3 is random
+				actionQueue.add(actionCreator.createGoStraight(inchesToMeters(60 - 1), .3, 90, startingOrientation)); // the 3 is random
 				actionQueue.add(actionCreator.createTurnToOrientation(driveAngle));
-				actionQueue.add(actionCreator.createGoStraight(30, .2, driveAngle, driveAngle));
+				actionQueue.add(actionCreator.createGoStraight(inchesToMeters(30), .2, driveAngle, driveAngle));
 				actionQueue.add(actionCreator.createDropHatch());
-				actionQueue.add(actionCreator.createGoStraight(10, .2, driveAngle + 180, driveAngle));
-				actionQueue.add(actionCreator.createGoStraight(20, .3, towardsCenter, driveAngle));
+				actionQueue.add(actionCreator.createGoStraight(inchesToMeters(10), .2, driveAngle + 180, driveAngle));
+				actionQueue.add(actionCreator.createGoStraight(inchesToMeters(20), .3, towardsCenter, driveAngle));
 				actionQueue.add(successQueue);
 			}
 			if(afterComplete != null) {
 				if (afterComplete == AfterComplete.PREPARE_FOR_DEFENSE) {
-					successQueue.add(actionCreator.createGoStraight(40, .3, towardsCenter));
+					successQueue.add(actionCreator.createGoStraight(inchesToMeters(40), .3, towardsCenter));
 					successQueue.add(actionCreator.createTurnToOrientation(90));
 					successQueue.add(new Actions.ActionMultiplexerBuilder(
-							actionCreator.createGoStraight(75, .3, 90, 90),
+							actionCreator.createGoStraight(inchesToMeters(75), .3, 90, 90),
 							actionCreator.createStowHatch()
 					).build());
 				} else {
@@ -323,12 +324,12 @@ public class AutonomousModeCreator {
 					}
 					final GamePieceType afterGamePieceType = hatch ? GamePieceType.HATCH : GamePieceType.CARGO;
 					successQueue.add(actionCreator.createLogMessageAction("going to go back 30 inches"));
-					successQueue.add(actionCreator.createGoStraight(30, .3, -90));
+					successQueue.add(actionCreator.createGoStraight(inchesToMeters(30), .3, -90));
 					successQueue.add(actionCreator.createLogMessageAction("going to rotate"));
-					final double faceDirection = getManipulatorOffset(afterGamePieceType) - 90;
+					final double faceDirection = getManipulatorOffsetDegrees(afterGamePieceType) - 90;
 					successQueue.add(actionCreator.createTurnToOrientation(faceDirection));
 					successQueue.add(actionCreator.createLogMessageAction("Going to go straight"));
-					successQueue.add(actionCreator.createGoStraight(100, .4, -90, faceDirection));
+					successQueue.add(actionCreator.createGoStraight(inchesToMeters(100), .4, -90, faceDirection));
 				}
 			}
 		} else {
@@ -337,22 +338,22 @@ public class AutonomousModeCreator {
 		return actionQueue;
 
 	}
-	private double getManipulatorOffset(GamePieceType gamePieceType){
+	private double getManipulatorOffsetDegrees(GamePieceType gamePieceType){
 		Objects.requireNonNull(gamePieceType);
 		return gamePieceType == GamePieceType.HATCH
-				? dimensions.getHatchManipulatorPerspective().getOffset(null)
-				: dimensions.getCargoManipulatorPerspective().getOffset(null);
+				? dimensions.getHatchManipulatorPerspective().getOffsetDegrees()
+				: dimensions.getCargoManipulatorPerspective().getOffsetDegrees();
 	}
 	private double getManipulatorSideWidth(GamePieceType gamePieceType){
 		Objects.requireNonNull(gamePieceType);
 		return gamePieceType == GamePieceType.HATCH
-				? dimensions.getHatchSideWidth()
-				: dimensions.getCargoSideWidth();
+				? dimensions.getHatchSideWidthMeters()
+				: dimensions.getCargoSideWidthMeters();
 	}
 	private double getManipulatorSideDepth(GamePieceType gamePieceType){
 		Objects.requireNonNull(gamePieceType);
 		return gamePieceType == GamePieceType.HATCH
-				? dimensions.getHatchSideDepth()
-				: dimensions.getCargoSideDepth();
+				? dimensions.getHatchSideDepthMeters()
+				: dimensions.getCargoSideDepthMeters();
 	}
 }

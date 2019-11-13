@@ -128,9 +128,15 @@ public class SwerveDriveAction extends SimpleAction {
 			} else {
 				speed = MathUtil.conservePow(speedInputPart.getPosition(), 2);
 			}
-			final Vector2 translation = new Vector2(x, y).rotateDegrees(perspective.getOrientationOffset(orientationSupplier.get()) - 90);
-			
-//			drive.setControl(x, y, turnAmount, speed, perspective);
+			final Vector2 translation;
+			double offsetRadians = perspective.getOffsetRadians();
+			double orientationRadians = orientationSupplier.get().getOrientationRadians();
+			if(perspective.isUseGyro()){
+				translation = new Vector2(x, y).rotateRadians(-orientationRadians - offsetRadians);
+			} else {
+				translation = new Vector2(y, -x).rotateRadians(-offsetRadians);
+			}
+
 			drive.setControl(translation, turnAmount, speed);
 		}
 	}

@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 import static java.lang.Math.*;
 
 public class GoStraight extends SimpleAction {
-	private final double distance;
+	private final double distanceMeters;
 	private final double speed;
 //	private final double directionDegrees;
 	private final double x, y;
@@ -23,10 +23,10 @@ public class GoStraight extends SimpleAction {
 	private SwerveDistanceTracker tracker = null;
 
 
-	public GoStraight(double distance, double speed, double x, double y, Double faceDirectionDegrees,
+	public GoStraight(double distanceMeters, double speed, double x, double y, Double faceDirectionDegrees,
 					  Supplier<SwerveDrive> driveSupplier, Supplier<Orientation> orientationSupplier) {
 		super(true);
-		this.distance = distance;
+		this.distanceMeters = distanceMeters;
 		this.speed = speed;
 		this.x = x;
 		this.y = y;
@@ -34,10 +34,10 @@ public class GoStraight extends SimpleAction {
 		this.driveSupplier = driveSupplier;
 		this.orientationSupplier = orientationSupplier;
 	}
-	public static GoStraight createGoStraightAtHeading(double distance, double speed, double headingDegrees, Double faceDirectionDegrees,
+	public static GoStraight createGoStraightAtHeading(double distanceMeters, double speed, double headingDegrees, Double faceDirectionDegrees,
 													   Supplier<SwerveDrive> driveSupplier, Supplier<Orientation> orientationSupplier){
 		final double radians = toRadians(headingDegrees);
-		return new GoStraight(distance, speed, cos(radians), sin(radians), faceDirectionDegrees, driveSupplier, orientationSupplier);
+		return new GoStraight(distanceMeters, speed, cos(radians), sin(radians), faceDirectionDegrees, driveSupplier, orientationSupplier);
 	}
 	
 	@Override
@@ -60,9 +60,9 @@ public class GoStraight extends SimpleAction {
 			minChange = 0;
 		}
 		final double turnAmount = .75 * max(-1, min(1, minChange / -40));
-		drive.setControl(new Vector2(x * speed, y * speed).rotateDegrees(currentOrientation), turnAmount, 1); // TODO check this
+		drive.setControl(new Vector2(x * speed, y * speed).rotateDegrees(-currentOrientation), turnAmount, 1);
 
-		setDone(tracker.calculateDistance() >= distance);
+		setDone(tracker.calculateDistance() >= distanceMeters);
 
 	}
 }

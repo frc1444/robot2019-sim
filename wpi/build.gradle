@@ -1,7 +1,6 @@
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2019.4.1"
-    id "idea"
 }
 
 def ROBOT_MAIN_CLASS = "com.first1444.frc.robot2019.Main"
@@ -35,14 +34,18 @@ deploy {
         }
     }
 }
+def includeDesktopSupport = true
 
+wpi {
+    opencvVersion = "3.4.4-5" // temporary fix until new WPILib release
+}
 dependencies {
-    implementation project(":core")
     implementation "com.github.frc1444.robo-sim:wpi:$roboSimVersion"
     implementation wpi.deps.wpilib()
     implementation wpi.deps.vendor.java()
     nativeZip wpi.deps.vendor.jni(wpi.platforms.roborio)
     nativeDesktopZip wpi.deps.vendor.jni(wpi.platforms.desktop)
+    simulation "edu.wpi.first.halsim:halsim_ds_socket:${wpi.wpilibVersion}:${wpi.platforms.desktop}@zip"
 }
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
