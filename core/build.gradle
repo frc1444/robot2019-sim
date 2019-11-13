@@ -1,0 +1,26 @@
+apply plugin: "java"
+sourceCompatibility = '1.11'
+targetCompatibility = '1.11'
+dependencies {
+    api "com.github.frc1444:robo-sim:$roboSimVersion"
+    api "com.github.frc1444.robo-sim:api:$roboSimVersion"
+
+    api 'com.github.retrodaredevil:abstract-controller-lib:v2.2.5'
+    api 'com.github.retrodaredevil:action-lib:v1.1.6'
+
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    api group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
+    // https://mvnrepository.com/artifact/org.zeromq/jeromq
+    api group: 'org.zeromq', name: 'jeromq', version: '0.4.3'
+
+
+    api "edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion"
+    api "edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion"
+    api "edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion:linuxx86-64"
+    api "edu.wpi.first.wpilibj:wpilibj-java:$wpiLibVersion"
+    api "edu.wpi.first.wpiutil:wpiutil-java:$wpiLibVersion"
+    api "edu.wpi.first.cscore:cscore-java:$wpiLibVersion"
+    api "edu.wpi.first.hal:hal-java:$wpiLibVersion"
+    api "edu.wpi.first.hal:hal-jni:$wpiLibVersion"
+    api "edu.wpi.first.hal:hal-jni:$wpiLibVersion:linuxx86-64"
+}

@@ -1,0 +1,10 @@
+apply plugin: "java"
+
+sourceCompatibility = 1.11
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+dependencies {
+    api "com.badlogicgames.gdx:gdx:$gdxVersion"
+    api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+    api "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
+    api "com.github.frc1444.robo-sim:gdx:$roboSimVersion"
+}
