@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 import static com.first1444.frc.util.MathUtil.mod;
 import static java.lang.Math.toRadians;
 
-@Deprecated
 public class DefaultOrientation implements Orientation {
 
 	private final Gyro gyro;
@@ -25,7 +24,7 @@ public class DefaultOrientation implements Orientation {
 	 *                       if a negative value represents clockwise and a positive value represents counter-clockwise.
 	 *                       This normally has to be true because of how WPILib does most things.
 	 */
-	DefaultOrientation(Gyro gyro, Supplier<Double> startingOrientationSupplier, boolean isGyroReversed) {
+	public DefaultOrientation(Gyro gyro, Supplier<Double> startingOrientationSupplier, boolean isGyroReversed) {
 		this.gyro = gyro;
 		this.startingOrientationSupplier = Objects.requireNonNull(startingOrientationSupplier);
 		this.isGyroReversed = isGyroReversed;

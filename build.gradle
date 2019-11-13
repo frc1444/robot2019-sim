@@ -40,14 +40,14 @@ subprojects {
     dependencies {
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     }
-//    test {
-//        useJUnitPlatform()
-//    }
-//    compileKotlin {
-//        kotlinOptions {
-//            jvmTarget = "1.8"
-//        }
-//    }
+    test {
+        useJUnitPlatform()
+    }
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "11"
+        }
+    }
 }
 project(":core"){
     apply plugin: "java-library"

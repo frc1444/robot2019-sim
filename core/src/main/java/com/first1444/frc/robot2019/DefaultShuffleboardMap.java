@@ -3,11 +3,11 @@ package com.first1444.frc.robot2019;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
-class DefaultShuffleboardMap implements ShuffleboardMap {
+public class DefaultShuffleboardMap implements ShuffleboardMap {
 	private final ShuffleboardTab userTab;
 	private final ShuffleboardTab devTab;
 	private final ShuffleboardTab debugTab;
-	DefaultShuffleboardMap(){
+	public DefaultShuffleboardMap(){
 		userTab = Shuffleboard.getTab("user");
 		devTab = Shuffleboard.getTab("dev");
 		debugTab = Shuffleboard.getTab("debug");

@@ -1,6 +1,5 @@
 package com.first1444.frc.robot2019;
 
-import com.first1444.frc.robot2019.ShuffleboardMap;
 import com.first1444.frc.robot2019.subsystems.TaskSystem;
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
@@ -8,7 +7,6 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.SimpleAction;
 
 import java.util.Objects;

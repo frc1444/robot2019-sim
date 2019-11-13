@@ -128,9 +128,10 @@ public class SwerveDriveAction extends SimpleAction {
 			} else {
 				speed = MathUtil.conservePow(speedInputPart.getPosition(), 2);
 			}
+			final Vector2 translation = new Vector2(x, y).rotateDegrees(perspective.getOrientationOffset(orientationSupplier.get()) - 90);
 			
 //			drive.setControl(x, y, turnAmount, speed, perspective);
-			drive.setControl(new Vector2(x, y).rotateRadians(-perspective.getForwardDirection()), turnAmount, speed); // TODO test to see if this works
+			drive.setControl(translation, turnAmount, speed);
 		}
 	}
 

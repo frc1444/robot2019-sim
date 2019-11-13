@@ -4,7 +4,7 @@ plugins {
     id "idea"
 }
 
-def ROBOT_MAIN_CLASS = "com.first1444.frc.robot2020.Main"
+def ROBOT_MAIN_CLASS = "com.first1444.frc.robot2019.Main"
 
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
@@ -43,7 +43,6 @@ dependencies {
     implementation wpi.deps.vendor.java()
     nativeZip wpi.deps.vendor.jni(wpi.platforms.roborio)
     nativeDesktopZip wpi.deps.vendor.jni(wpi.platforms.desktop)
-    // hi
 }
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')

@@ -1,7 +1,9 @@
 package com.first1444.frc.robot2019.subsystems;
 
 
-public interface Lift {
+import me.retrodaredevil.action.Action;
+
+public interface Lift extends Action {
 	void setDesiredPosition(double desiredPosition);
 	void setDesiredPosition(Position desiredPosition);
 	

@@ -21,21 +21,14 @@ import com.first1444.frc.robot2019.event.TCPEventSender;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
-import com.first1444.frc.robot2019.sensors.BNO055;
 import com.first1444.frc.robot2019.subsystems.*;
 import com.first1444.frc.robot2019.subsystems.implementations.*;
-import com.first1444.frc.robot2019.subsystems.swerve.*;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import com.first1444.frc.robot2019.vision.DefaultVisionPacketProvider;
 import com.first1444.frc.robot2019.vision.PacketListener;
 import com.first1444.frc.robot2019.vision.VisionSupplier;
 import com.first1444.frc.util.DynamicSendableChooser;
 import com.first1444.frc.util.OrientationSendable;
-import com.first1444.frc.util.pid.PidKey;
-import com.first1444.frc.util.reportmap.ReportMap;
-import com.first1444.frc.util.reportmap.ShuffleboardReportMap;
-import com.first1444.frc.util.valuemap.MutableValueMap;
-import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
@@ -46,8 +39,6 @@ import com.first1444.sim.api.scheduler.match.DefaultMatchScheduler;
 import com.first1444.sim.api.scheduler.match.MatchScheduler;
 import com.first1444.sim.api.scheduler.match.MatchTime;
 import com.first1444.sim.api.sensors.Orientation;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.implementations.ControllerPartCreator;
@@ -55,7 +46,7 @@ import me.retrodaredevil.controller.MutableControlConfig;
 import me.retrodaredevil.controller.ControlConfig;
 import me.retrodaredevil.controller.PartUpdater;
 import me.retrodaredevil.controller.output.ControllerRumble;
-import me.retrodaredevil.controller.output.DualShockRumble;
+import me.retrodaredevil.controller.types.StandardControllerInput;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -68,7 +59,6 @@ public class Robot extends IterativeRobotAdapter {
 
 	private final FrcDriverStation driverStation;
 	
-	private final ShuffleboardMap shuffleboardMap;
 	private final OrientationSystem orientationSystem;
 	private final RobotDimensions dimensions;
 
@@ -118,21 +108,24 @@ public class Robot extends IterativeRobotAdapter {
 	public Robot(
 			FrcDriverStation driverStation,
 			Clock clock,
-			ControllerPartCreator port0, ControllerPartCreator port1, ControllerPartCreator port2, ControllerPartCreator port5
+			ShuffleboardMap shuffleboardMap,
+			StandardControllerInput controller, ControllerPartCreator port1, ControllerPartCreator port2, ControllerRumble rumble,
+			Orientation orientation,
+			FourWheelSwerveDriveData fourWheelSwerveData,
+			Lift lift, CargoIntake cargoIntake, HatchIntake hatchIntake, Climber climber,
+			Action extraAction
 	){
 	    this.driverStation = driverStation;
-		shuffleboardMap = new DefaultShuffleboardMap();
 		robotInput = new DefaultRobotInput(
-				InputUtil.createPS4Controller(port0),
+				controller,
 				InputUtil.createJoystick(port1),
 				InputUtil.createAttackJoystick(port2),
-				new DualShockRumble(port5.createRumble())
+				rumble
 		);
 		partUpdater.addPartAssertNotPresent(robotInput);
 		partUpdater.updateParts(controlConfig); // update this so when calling get methods don't throw exceptions
 
-		final BNO055 gyro = new BNO055();
-		gyro.SetMode(BNO055.IMUMode.NDOF);
+		orientationSystem = new OrientationSystem(shuffleboardMap, orientation, robotInput);
 //		final Gyro gyro = new DummyGyro(0);
 		
 		final SendableChooser<Boolean> cameraIDSwitchedChooser = new SendableChooser<>();
@@ -141,8 +134,7 @@ public class Robot extends IterativeRobotAdapter {
 		shuffleboardMap.getDevTab().add("Camera IDs Flipped", cameraIDSwitchedChooser);
 		dimensions = new DynamicRobotDimensions(Constants.Dimensions.INSTANCE, cameraIDSwitchedChooser::getSelected);
 
-		orientationSystem = new OrientationSystem(shuffleboardMap, gyro, robotInput);
-		
+
 		OrientationSendable.addOrientation(shuffleboardMap.getUserTab(), this::getOrientation);
 		
 		autonomousPerspectiveChooser = new DynamicSendableChooser<>();
@@ -154,56 +146,8 @@ public class Robot extends IterativeRobotAdapter {
 		autonomousPerspectiveChooser.addOption("Jumbotron on Left", Perspective.JUMBOTRON_ON_LEFT);
 		shuffleboardMap.getUserTab().add("Autonomous Perspective", autonomousPerspectiveChooser).withSize(2, 1).withPosition(9, 4);
 
-		final MutableValueMapSendable<PidKey> drivePidSendable = new MutableValueMapSendable<>(PidKey.class);
-		final MutableValueMapSendable<PidKey> steerPidSendable = new MutableValueMapSendable<>(PidKey.class);
-		if(Constants.DEBUG) {
-			shuffleboardMap.getDevTab().add("Drive PID", drivePidSendable).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
-			shuffleboardMap.getDevTab().add("Steer PID", steerPidSendable).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
-		}
-		final MutableValueMap<PidKey> drivePid = drivePidSendable.getMutableValueMap();
-		final MutableValueMap<PidKey> steerPid = steerPidSendable.getMutableValueMap();
-		drivePid
-				.setDouble(PidKey.P, 1.5)
-				.setDouble(PidKey.F, 1.0)
-				.setDouble(PidKey.CLOSED_RAMP_RATE, .25); // etc
-		steerPid
-				.setDouble(PidKey.P, 12)
-				.setDouble(PidKey.I, .03);
+		final FourWheelSwerveDrive drive = new FourWheelSwerveDrive(fourWheelSwerveData);
 
-		final ShuffleboardTab talonDebug = shuffleboardMap.getDebugTab();
-		final ReportMap reportMap = new ShuffleboardReportMap(shuffleboardMap.getDebugTab().getLayout("Report Map", BuiltInLayouts.kList));
-		final SwerveSetup swerve = Constants.Swerve2019.INSTANCE;
-//		final SwerveSetup swerve = Constants.Swerve2018.INSTANCE;
-		final int quadCounts = swerve.getQuadCountsPerRevolution();
-		final FourWheelSwerveDrive drive;
-		drive = new FourWheelSwerveDrive(
-				new FourWheelSwerveDriveData(
-//							new TalonSwerveModule("front right", swerve.getFRDriveCAN(), swerve.getFRSteerCAN(), quadCounts, drivePid, steerPid,
-//									swerve.setupFR(createModuleConfig("front right module")), talonDebug),
-//
-//							new TalonSwerveModule("front left", swerve.getFLDriveCAN(), swerve.getFLSteerCAN(), quadCounts, drivePid, steerPid,
-//									swerve.setupFL(createModuleConfig("front left module")), talonDebug),
-//
-//							new TalonSwerveModule("rear left", swerve.getRLDriveCAN(), swerve.getRLSteerCAN(), quadCounts, drivePid, steerPid,
-//									swerve.setupRL(createModuleConfig("rear left module")), talonDebug),
-//
-//							new TalonSwerveModule("rear right", swerve.getRRDriveCAN(), swerve.getRRSteerCAN(), quadCounts, drivePid, steerPid,
-//									swerve.setupRR(createModuleConfig("rear right module")), talonDebug)
-
-
-					new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule(), new DummySwerveModule(),
-					swerve.getWheelBase(), swerve.getTrackWidth()
-				)
-		);
-		final var lift = new DummyLift(reportMap);
-//		final var lift = new MotorLift();
-		final var cargoIntake = new DummyCargoIntake(reportMap);
-//		final var cargoIntake = new MotorCargoIntake(new VictorSPX(Constants.CARGO_INTAKE_ID), new TalonSRX(Constants.CARGO_PIVOT_ID));
-		final var climber = new DummyClimber(reportMap);
-//		final var climber = new MotorClimber(new TalonSRX(Constants.CLIMB_LIFT_PIVOT_ID), new VictorSPX(Constants.CLIMB_DRIVE_ID));
-		final var hatchIntake = new DummyHatchIntake(reportMap);
-//		final var hatchIntake = new MotorHatchIntake(new TalonSRX(Constants.HATCH_GRAB_ID), new TalonSRX(Constants.HATCH_STOW_ID), new TalonSRX(Constants.HATCH_PIVOT_ID));
-		
 		final var taskSystem = new DefaultTaskSystem(robotInput);
 		final var matchScheduler = new DefaultMatchScheduler(driverStation, clock);
 		this.drive = drive;
@@ -214,19 +158,19 @@ public class Robot extends IterativeRobotAdapter {
 		this.taskSystem = taskSystem;
 		this.matchScheduler = matchScheduler;
 		
-		packetListener = new PacketListener(5801); // start in robotInit()
+		packetListener = new PacketListener(5801);
 		soundSender = new TCPEventSender(5809);
 		
 		enabledSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
-				Actions.createRunForever(drive), lift, cargoIntake, climber, hatchIntake
+				Actions.createRunForeverRecyclable(drive), lift, cargoIntake, climber, hatchIntake
 		).clearAllOnEnd(false).canRecycle(true).build();
 		
 		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder( // NOTE, without forceUpdateInOrder(true), these will not update in order
 				orientationSystem,
 				taskSystem,
 				Actions.createRunForever(matchScheduler),
-				new SwerveCalibrateAction(this::getDrive, robotInput)
-//				new CameraSystem(shuffleboardMap, this::getTaskSystem) // TODO camera stuff
+				new SwerveCalibrateAction(this::getDrive, robotInput),
+				extraAction
 		).clearAllOnEnd(false).canRecycle(false).build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
@@ -256,13 +200,6 @@ public class Robot extends IterativeRobotAdapter {
 		System.out.println("close() method called! Robot program must be ending!");
 	}
 	
-	private MutableValueMap<ModuleConfig> createModuleConfig(String name){
-		final MutableValueMapSendable<ModuleConfig> config = new MutableValueMapSendable<>(ModuleConfig.class);
-		if(Constants.DEBUG) {
-			shuffleboardMap.getDevTab().add(name, config).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
-		}
-		return config.getMutableValueMap();
-	}
 
 	// endregion
 	
@@ -295,7 +232,6 @@ public class Robot extends IterativeRobotAdapter {
 		}
 		lastMode = RobotMode.DISABLED;
 	}
-	@Override public void disabledPeriodic() { }
 
 	/** Called when going into teleop mode */
 	@Override
@@ -326,13 +262,10 @@ public class Robot extends IterativeRobotAdapter {
 		System.out.println("Scheduled some stuff for end of teleop!");
 		lastMode = RobotMode.TELEOP;
 	}
-	@Override public void teleopPeriodic() { }
-	
+
 	/** Called first thing when match starts. Autonomous is active for 15 seconds*/
 	@Override
 	public void autonomousInit() {
-		orientationSystem.resetGyro();
-		
 		actionChooser.setNextAction(
 				new Actions.ActionQueueBuilder(
 						autonomousChooserState.createAutonomousAction(orientationSystem.getStartingOrientation()),
@@ -382,8 +315,6 @@ public class Robot extends IterativeRobotAdapter {
 		).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build());
 		lastMode = RobotMode.TEST;
 	}
-	@Override
-	public void testPeriodic() { }
 	// endregion
 	
 	public SwerveDrive getDrive(){ return drive; }

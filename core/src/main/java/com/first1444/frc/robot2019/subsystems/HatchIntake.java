@@ -1,6 +1,8 @@
 package com.first1444.frc.robot2019.subsystems;
 
-public interface HatchIntake {
+import me.retrodaredevil.action.Action;
+
+public interface HatchIntake extends Action {
 	void hold();
 	void drop();
 	void neutralHold();

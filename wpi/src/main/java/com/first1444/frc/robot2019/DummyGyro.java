@@ -1,4 +1,4 @@
-package com.first1444.frc.robot2019.sensors;
+package com.first1444.frc.robot2019;
 
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 
