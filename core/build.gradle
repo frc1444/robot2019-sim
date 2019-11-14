@@ -24,6 +24,3 @@ dependencies {
     api "edu.wpi.first.hal:hal-jni:$wpiLibVersion"
     api "edu.wpi.first.hal:hal-jni:$wpiLibVersion:linuxx86-64"
 }
-jar {
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-}
