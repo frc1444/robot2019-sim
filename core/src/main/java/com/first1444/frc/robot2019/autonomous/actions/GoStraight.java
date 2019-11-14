@@ -1,7 +1,7 @@
 package com.first1444.frc.robot2019.autonomous.actions;
 
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDistanceTracker;
-import com.first1444.frc.util.MathUtil;
+import com.first1444.sim.api.MathUtil;
 import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
 import com.first1444.sim.api.sensors.Orientation;

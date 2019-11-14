@@ -9,7 +9,6 @@ import com.first1444.frc.robot2019.subsystems.TaskSystem;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import com.first1444.frc.robot2019.vision.DefaultVisionPacketProvider;
 import com.first1444.frc.robot2019.vision.VisionSupplier;
-import com.first1444.frc.util.MathUtil;
 import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
 import com.first1444.sim.api.sensors.Orientation;
@@ -20,6 +19,8 @@ import me.retrodaredevil.controller.output.ControllerRumble;
 
 import java.util.Objects;
 import java.util.function.Supplier;
+
+import static com.first1444.sim.api.MathUtil.conservePow;
 
 /**
  * This swerve controls for teleop and should be ended when teleop is over. This can be recycled
@@ -126,15 +127,15 @@ public class SwerveDriveAction extends SimpleAction {
 			if (speedInputPart.isDeadzone()) {
 				speed = 0;
 			} else {
-				speed = MathUtil.conservePow(speedInputPart.getPosition(), 2);
+				speed = conservePow(speedInputPart.getPosition(), 2);
 			}
 			final Vector2 translation;
 			double offsetRadians = perspective.getOffsetRadians();
 			double orientationRadians = orientationSupplier.get().getOrientationRadians();
 			if(perspective.isUseGyro()){
-				translation = new Vector2(x, y).rotateRadians(-orientationRadians - offsetRadians);
+				translation = new Vector2(x, y).rotateRadians(offsetRadians - orientationRadians);
 			} else {
-				translation = new Vector2(y, -x).rotateRadians(-offsetRadians);
+				translation = new Vector2(y, -x).rotateRadians(offsetRadians);
 			}
 
 			drive.setControl(translation, turnAmount, speed);

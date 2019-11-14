@@ -2,7 +2,7 @@ package com.first1444.frc.robot2019;
 
 import com.first1444.sim.api.sensors.Orientation;
 
-import static com.first1444.frc.util.MathUtil.mod;
+import static com.first1444.sim.api.MathUtil.mod;
 import static java.lang.Math.toRadians;
 
 public enum Perspective {

@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.interfaces.Gyro;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import static com.first1444.frc.util.MathUtil.mod;
+import static com.first1444.sim.api.MathUtil.mod;
 import static java.lang.Math.toRadians;
 
 public class DefaultOrientation implements Orientation {

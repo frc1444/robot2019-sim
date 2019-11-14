@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static com.first1444.frc.util.MathUtil.toWPIDegrees;
+
 public class OrientationSendable extends SendableBase {
 	private final Supplier<Orientation> orientationSupplier;
 	
@@ -33,6 +35,6 @@ public class OrientationSendable extends SendableBase {
 		builder.addDoubleProperty("Value", this::getWPIAngle, null);
 	}
 	private double getWPIAngle(){
-		return MathUtil.toWPIDegrees(orientationSupplier.get().getOrientationDegrees());
+		return toWPIDegrees(orientationSupplier.get().getOrientationDegrees());
 	}
 }

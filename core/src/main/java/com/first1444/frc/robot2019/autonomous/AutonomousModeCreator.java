@@ -9,7 +9,7 @@ import com.first1444.frc.robot2019.deepspace.GamePieceType;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.autonomous.options.StartingPosition;
 import com.first1444.frc.robot2019.subsystems.Lift;
-import com.first1444.frc.util.MathUtil;
+import com.first1444.sim.api.MathUtil;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.ActionQueue;
 import me.retrodaredevil.action.Actions;
