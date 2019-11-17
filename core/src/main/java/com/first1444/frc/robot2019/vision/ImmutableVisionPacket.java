@@ -2,6 +2,7 @@ package com.first1444.frc.robot2019.vision;
 
 import static java.lang.Math.*;
 
+@Deprecated
 public class ImmutableVisionPacket implements VisionPacket{
 	private final double robotX, robotY, robotZ, yaw, pitch, roll, imageX, imageY;
 	private final double visionX, visionY, visionZ;

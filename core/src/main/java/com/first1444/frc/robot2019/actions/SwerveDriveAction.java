@@ -1,51 +1,60 @@
 package com.first1444.frc.robot2019.actions;
 
-import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.Perspective;
 import com.first1444.frc.robot2019.RobotDimensions;
 import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.subsystems.TaskSystem;
-import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
-import com.first1444.frc.robot2019.vision.DefaultVisionPacketProvider;
-import com.first1444.frc.robot2019.vision.VisionSupplier;
+import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
 import com.first1444.sim.api.sensors.Orientation;
-import me.retrodaredevil.action.*;
+import com.first1444.sim.api.surroundings.SurroundingProvider;
+import me.retrodaredevil.action.ActionChooser;
+import me.retrodaredevil.action.Actions;
+import me.retrodaredevil.action.SimpleAction;
+import me.retrodaredevil.action.WhenDone;
 import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.input.JoystickPart;
 import me.retrodaredevil.controller.output.ControllerRumble;
 
-import java.util.Objects;
-import java.util.function.Supplier;
-
 import static com.first1444.sim.api.MathUtil.conservePow;
+import static java.util.Objects.requireNonNull;
 
 /**
  * This swerve controls for teleop and should be ended when teleop is over. This can be recycled
  */
 public class SwerveDriveAction extends SimpleAction {
-	private final Supplier<SwerveDrive> driveSupplier;
-	private final Supplier<Orientation> orientationSupplier;
-	private final Supplier<TaskSystem> taskSystemSupplier;
+    private final Clock clock;
+	private final SwerveDrive drive;
+	private final Orientation orientation;
+	private final TaskSystem taskSystem;
 	private final RobotInput input;
-	private final ActionChooser actionChooser;
-	private final VisionSupplier visionSupplier;
+	private final SurroundingProvider surroundingProvider;
 	private final RobotDimensions dimensions;
-	
+
+
+	private final ActionChooser actionChooser;
+
 	/** The perspective or null to automatically choose the perspective based on the task */
 	private Perspective perspective = Perspective.DRIVER_STATION;
 	
-	public SwerveDriveAction(Supplier<SwerveDrive> driveSupplier, Supplier<Orientation> orientationSupplier, Supplier<TaskSystem> taskSystemSupplier, RobotInput input, VisionSupplier visionSupplier, RobotDimensions dimensions) {
+	public SwerveDriveAction(
+			Clock clock,
+			SwerveDrive drive, Orientation orientation, TaskSystem taskSystem,
+			RobotInput input,
+			SurroundingProvider surroundingProvider,
+			RobotDimensions dimensions) {
 		super(true);
-		this.driveSupplier = Objects.requireNonNull(driveSupplier);
-		this.orientationSupplier = Objects.requireNonNull(orientationSupplier);
-		this.taskSystemSupplier = Objects.requireNonNull(taskSystemSupplier);
-		this.input = Objects.requireNonNull(input);
-		this.actionChooser = Actions.createActionChooserRecyclable(WhenDone.BE_DONE);
-		this.visionSupplier = visionSupplier;
-		this.dimensions = dimensions;
+		this.clock = requireNonNull(clock);
+		this.drive = requireNonNull(drive);
+		this.orientation = requireNonNull(orientation);
+		this.taskSystem = requireNonNull(taskSystem);
+		this.input = requireNonNull(input);
+		this.surroundingProvider = requireNonNull(surroundingProvider);
+		this.dimensions = requireNonNull(dimensions);
+
+		actionChooser = Actions.createActionChooserRecyclable(WhenDone.BE_DONE);
 	}
 	
 	/**
@@ -69,7 +78,7 @@ public class SwerveDriveAction extends SimpleAction {
 	protected void onUpdate() {
 		super.onUpdate();
 		final Perspective perspective;
-		final TaskSystem.Task task = taskSystemSupplier.get().getCurrentTask();
+		final TaskSystem.Task task = taskSystem.getCurrentTask();
 		if(input.getFirstPersonHoldButton().isDown() || this.perspective == null){
 			perspective = task == TaskSystem.Task.HATCH
 					? dimensions.getHatchManipulatorPerspective()
@@ -77,19 +86,13 @@ public class SwerveDriveAction extends SimpleAction {
 		} else {
 			perspective = this.perspective;
 		}
-		Objects.requireNonNull(perspective);
+		requireNonNull(perspective);
 		
 		if(input.getVisionAlign().isDown()){
 			if(input.getVisionAlign().isJustPressed()){
 				actionChooser.setNextAction(LineUpCreator.createLineUpAction(
-						new DefaultVisionPacketProvider(
-								task == TaskSystem.Task.CARGO ? dimensions.getCargoManipulatorPerspective() : dimensions.getHatchManipulatorPerspective(),
-								visionSupplier,
-								task == TaskSystem.Task.CARGO ? dimensions.getCargoCameraID() : dimensions.getHatchCameraID(),
-								new BestVisionPacketSelector(),
-								Constants.VISION_PACKET_VALIDITY_TIME
-						),
-						driveSupplier, orientationSupplier,  null, null, null
+				        clock, surroundingProvider,
+						drive, orientation,  null, null, null
 				));
 			}
 			actionChooser.update();
@@ -103,8 +106,6 @@ public class SwerveDriveAction extends SimpleAction {
 			if(actionChooser.isActive()){
 				actionChooser.end();
 			}
-			final SwerveDrive drive = Objects.requireNonNull(driveSupplier.get());
-			
 			final JoystickPart joystick = input.getMovementJoy();
 			final double x, y;
 			if(joystick.isDeadzone()){
@@ -131,7 +132,7 @@ public class SwerveDriveAction extends SimpleAction {
 			}
 			final Vector2 translation;
 			double offsetRadians = perspective.getOffsetRadians();
-			double orientationRadians = orientationSupplier.get().getOrientationRadians();
+			double orientationRadians = orientation.getOrientationRadians();
 			if(perspective.isUseGyro()){
 				translation = new Vector2(x, y).rotateRadians(offsetRadians - orientationRadians);
 			} else {

@@ -7,6 +7,7 @@ import java.util.List;
 import static java.lang.Math.abs;
 import static java.lang.Math.hypot;
 
+@Deprecated
 public class BestVisionPacketSelector implements PreferredTargetSelector {
 	@Override
 	public VisionPacket getPreferredTarget(Collection<? extends VisionPacket> visiblePackets) {

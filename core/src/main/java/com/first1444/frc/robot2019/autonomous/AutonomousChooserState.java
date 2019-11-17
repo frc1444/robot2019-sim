@@ -71,7 +71,7 @@ public class AutonomousChooserState {
 			updateAfterCompleteChooser();
 		});
 	}
-	public Action createAutonomousAction(double startingOrientation){
+	public Action createAutonomousAction(double startingOrientationDegrees){
 		final AutonomousType type = autonomousChooser.getSelected();
 		if(type == null){
 			throw new NullPointerException("The autonomous type cannot be null!");
@@ -89,7 +89,7 @@ public class AutonomousChooserState {
 									() -> robotInput.getAutonomousWaitButton().isDown(),
 									() -> robotInput.getAutonomousStartButton().isDown()
 							),
-							autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, lineUpType, afterComplete, startingOrientation)
+							autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, lineUpType, afterComplete, startingOrientationDegrees)
 					).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build(),
 					Throwable.class, new PrintWriter(System.err)
 			);

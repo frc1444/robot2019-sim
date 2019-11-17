@@ -7,7 +7,6 @@ import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.subsystems.Lift;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
-import com.first1444.frc.robot2019.vision.DefaultVisionPacketProvider;
 import edu.wpi.first.wpilibj.DriverStation;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
@@ -15,6 +14,8 @@ import me.retrodaredevil.action.SimpleAction;
 import me.retrodaredevil.action.WhenDone;
 
 import java.util.Map;
+
+import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
 
 public class RobotAutonActionCreator implements AutonActionCreator {
 	private static final Map<SlotLevel, Lift.Position> SLOT_MAP = Map.of(
@@ -82,14 +83,9 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 		final boolean[] fail = {false};
 		
 		final var lineUp = LineUpCreator.createLinkedLineUpAction(
-				new DefaultVisionPacketProvider(
-						hatch ? robot.getDimensions().getHatchManipulatorPerspective() : robot.getDimensions().getCargoManipulatorPerspective(),
-						robot.getVisionSupplier(),
-						hatch ? robot.getDimensions().getHatchCameraID() : robot.getDimensions().getCargoCameraID(),
-						new BestVisionPacketSelector(),
-						Constants.VISION_PACKET_VALIDITY_TIME
-				),
-				robot::getDrive, robot::getOrientation,
+		        robot.getClock(),
+				robot.getSurroundingProvider(),
+				robot.getDrive(), robot.getOrientation(),
 				Actions.createRunOnce(() -> fail[0] = true),
 				Actions.createRunOnce(() -> success[0] = true),
 				robot.getSoundSender()
@@ -104,7 +100,7 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 						lineUpRunner.update();
 						final double distanceLeft;
 						if(lineUp.isActive()){
-							distanceLeft = lineUp.getInchesAway();
+							distanceLeft = lineUp.getDistanceAway();
 						} else if(success[0]){
 							distanceLeft = 0;
 						} else if(fail[0]){
@@ -116,7 +112,7 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 						}
 						robot.getCargoIntake().stow(); // always stow cargo intake
 						final Lift lift = robot.getLift();
-						if(distanceLeft < 40){
+						if(distanceLeft < inchesToMeters(40)){
 							lift.setDesiredPosition(liftPosition);
 							if(hatch){
 								robot.getHatchIntake().readyPosition();

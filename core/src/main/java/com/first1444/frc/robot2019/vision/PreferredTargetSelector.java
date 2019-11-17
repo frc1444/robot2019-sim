@@ -2,6 +2,7 @@ package com.first1444.frc.robot2019.vision;
 
 import java.util.Collection;
 
+@Deprecated
 public interface PreferredTargetSelector {
 	/**
 	 *

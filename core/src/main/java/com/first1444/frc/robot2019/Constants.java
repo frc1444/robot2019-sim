@@ -26,8 +26,8 @@ public final class Constants {
 	}
 
 	public static final Map<String, Object> ROBOT_PREFERENCES_PROPERTIES = Map.of("Show search box", false);
-	public static final long VISION_PACKET_VALIDITY_TIME = 500;
-	
+	public static final double VISION_PACKET_VALIDITY_TIME = .5;
+
 	// region CAN IDs
 	/** ID for the Climb Drive wheels Victor SPX*/
 	public static final int CLIMB_DRIVE_ID = 9;

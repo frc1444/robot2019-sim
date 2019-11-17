@@ -21,6 +21,11 @@ public class CameraSystem extends SimpleAction {
 	private final UsbCamera cargo;
 	private final MjpegServer videoSink;
 	private TaskSystem.Task lastTask = null;
+
+	/**
+	 * @param shuffleboardMap The shuffleboard map to add the camera to
+	 * @param taskSystemSupplier The supplier for the {@link TaskSystem}. This will not be called by the constructor
+	 */
 	public CameraSystem(ShuffleboardMap shuffleboardMap, Supplier<TaskSystem> taskSystemSupplier) {
 		super(false);
 		this.taskSystemSupplier = taskSystemSupplier;

@@ -8,16 +8,20 @@ import com.first1444.frc.robot2019.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
+import com.first1444.sim.api.RobotRunnable;
 import com.first1444.sim.api.RunnableCreator;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
+import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot;
+import com.first1444.sim.api.frc.BasicRobotRunnable;
 import com.first1444.sim.api.frc.FrcDriverStation;
-import com.first1444.sim.api.frc.IterativeRobotRunnable;
 import com.first1444.sim.wpi.WpiClock;
 import com.first1444.sim.wpi.frc.WpiFrcDriverStation;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import me.retrodaredevil.controller.output.DualShockRumble;
 import me.retrodaredevil.controller.wpi.WpiInputCreator;
+
+import java.util.Collections;
 
 public class WpiRunnableCreator implements RunnableCreator {
 
@@ -26,7 +30,7 @@ public class WpiRunnableCreator implements RunnableCreator {
 
 	}
 	@Override
-	public Runnable createRunnable() {
+	public RobotRunnable createRunnable() {
 	    ShuffleboardMap shuffleboardMap = new DefaultShuffleboardMap();
 		FrcDriverStation driverStation = new WpiFrcDriverStation(DriverStation.getInstance());
 
@@ -76,12 +80,13 @@ public class WpiRunnableCreator implements RunnableCreator {
 		Robot robot = new Robot(
 				driverStation, new WpiClock(), shuffleboardMap,
 				InputUtil.createPS4Controller(new WpiInputCreator(0)), new WpiInputCreator(1), new WpiInputCreator(2), new DualShockRumble(new WpiInputCreator(5).createRumble()),
-				new DefaultOrientation(gyro, () -> 0.0, true),
+				new DefaultOrientation(gyro, true),
 				data, lift, cargoIntake, hatchIntake, climber,
+				Collections::emptyList, // TODO vision
 				new CameraSystem(shuffleboardMap, () -> robotReference[0].getTaskSystem())
 		);
 		robotReference[0] = robot;
-		return new IterativeRobotRunnable(robot, driverStation);
+		return new BasicRobotRunnable(new AdvancedIterativeRobotBasicRobot(robot), driverStation);
 	}
 	private MutableValueMap<ModuleConfig> createModuleConfig(ShuffleboardMap shuffleboardMap, String name){
 		final MutableValueMapSendable<ModuleConfig> config = new MutableValueMapSendable<>(ModuleConfig.class);

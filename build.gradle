@@ -6,7 +6,7 @@ buildscript {
         gdxVersion = '1.9.10'
         box2DLightsVersion = '1.4'
 //        roboSimVersion = "v0.1.1"
-        roboSimVersion = "68d2b883b3"
+        roboSimVersion = "d6f4688ba2"
     }
     repositories {
         mavenLocal()

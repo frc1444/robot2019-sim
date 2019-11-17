@@ -8,18 +8,16 @@ import com.badlogic.gdx.physics.box2d.PolygonShape
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef
 import com.first1444.frc.robot2019.DefaultShuffleboardMap
 import com.first1444.frc.robot2019.Robot
-import com.first1444.frc.robot2019.ShuffleboardMap
 import com.first1444.frc.robot2019.subsystems.implementations.DummyCargoIntake
 import com.first1444.frc.robot2019.subsystems.implementations.DummyClimber
 import com.first1444.frc.robot2019.subsystems.implementations.DummyHatchIntake
 import com.first1444.frc.robot2019.subsystems.implementations.DummyLift
 import com.first1444.frc.util.reportmap.ShuffleboardReportMap
-import com.first1444.sim.api.RunnableCreator
-import com.first1444.sim.api.Vector2
+import com.first1444.sim.api.*
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData
 import com.first1444.sim.api.drivetrain.swerve.SwerveModule
-import com.first1444.sim.api.frc.IterativeRobotRunnable
-import com.first1444.sim.api.inchesToMeters
+import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot
+import com.first1444.sim.api.frc.BasicRobotRunnable
 import com.first1444.sim.gdx.*
 import com.first1444.sim.gdx.drivetrain.swerve.BodySwerveModule
 import com.first1444.sim.gdx.entity.ActorBodyEntity
@@ -121,20 +119,21 @@ object MyRobotCreator : RobotCreator {
         val reportMap = ShuffleboardReportMap(shuffleboardMap.debugTab.getLayout("Report Map", BuiltInLayouts.kList));
         val robotCreator = RunnableCreator.wrap {
             NetworkTableInstance.getDefault().startServer()
-//            VisionProvider(entity, 2.0, updateableData.clock)
-            val runnable = IterativeRobotRunnable(Robot(
+            val runnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
                     data.driverStation, updateableData.clock,
                     shuffleboardMap,
                     joystick, GdxControllerPartCreator(IndexedControllerProvider(1)), GdxControllerPartCreator(IndexedControllerProvider(2)), DisconnectedRumble.getInstance(),
                     EntityOrientation(entity),
                     swerveDriveData,
                     DummyLift(reportMap), DummyCargoIntake(reportMap), DummyHatchIntake(reportMap), DummyClimber(reportMap),
+                    VisionProvider(entity, 2.0, updateableData.clock),
                     Actions.createRunForeverRecyclable { }
-            ), data.driverStation)
-            Runnable {
-                runnable.run()
-                Shuffleboard.update()
-            }
+            )), data.driverStation)
+            RobotRunnableMultiplexer(
+                    listOf(runnable, RobotRunnable.wrap {
+                        Shuffleboard.update()
+                    })
+            )
         }
         return UpdateableMultiplexer(listOf(
                 entity,

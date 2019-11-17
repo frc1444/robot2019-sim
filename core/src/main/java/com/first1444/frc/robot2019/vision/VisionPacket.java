@@ -3,6 +3,7 @@ package com.first1444.frc.robot2019.vision;
 /**
  * NOTE: Distances are in inches, angles are in degrees
  */
+@Deprecated
 public interface VisionPacket {
 	/** @return The x position of the robot relative to the vision target (left and right)*/
 	double getRobotX();
