@@ -118,8 +118,9 @@ object MyRobotCreator : RobotCreator {
         val shuffleboardMap = DefaultShuffleboardMap()
         val reportMap = ShuffleboardReportMap(shuffleboardMap.debugTab.getLayout("Report Map", BuiltInLayouts.kList));
         val robotCreator = RunnableCreator.wrap {
-            NetworkTableInstance.getDefault().startServer()
-            val runnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
+            val networkTable = NetworkTableInstance.getDefault()
+            networkTable.startServer()
+            val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
                     data.driverStation, updateableData.clock,
                     shuffleboardMap,
                     joystick, GdxControllerPartCreator(IndexedControllerProvider(1)), GdxControllerPartCreator(IndexedControllerProvider(2)), DisconnectedRumble.getInstance(),
@@ -130,8 +131,15 @@ object MyRobotCreator : RobotCreator {
                     Actions.createRunForeverRecyclable { }
             )), data.driverStation)
             RobotRunnableMultiplexer(
-                    listOf(runnable, RobotRunnable.wrap {
-                        Shuffleboard.update()
+                    listOf(robotRunnable, object : RobotRunnable {
+                        override fun close() {
+                            networkTable.stopServer()
+                        }
+
+                        override fun run() {
+                            Shuffleboard.update()
+                        }
+
                     })
             )
         }
