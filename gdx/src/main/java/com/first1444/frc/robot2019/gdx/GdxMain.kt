@@ -1,12 +1,10 @@
 package com.first1444.frc.robot2019.gdx
 
-import com.badlogic.gdx.Game
+import com.badlogic.gdx.ApplicationListener
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.first1444.sim.gdx.init.*
 import edu.wpi.first.networktables.NetworkTableInstance
-import edu.wpi.first.networktables.NetworkTablesJNI
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
 
 private fun createSelectionCreator(uiSkin: Skin, changer: ScreenChanger): ScreenCreator {
     val creator = MyRobotCreator
@@ -33,7 +31,7 @@ private fun createSelectionCreator(uiSkin: Skin, changer: ScreenChanger): Screen
     )
 }
 
-fun createScreen(): Game {
+fun createScreen(): ApplicationListener {
     return SimpleGame { changer ->
         val uiSkin = Skin(Gdx.files.classpath("skins/sgx/sgx-ui.json"))
         createSelectionCreator(uiSkin, changer).create(changer)

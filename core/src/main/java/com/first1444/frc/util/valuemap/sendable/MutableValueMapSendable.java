@@ -1,12 +1,22 @@
 package com.first1444.frc.util.valuemap.sendable;
 
+import com.first1444.dashboard.ActiveComponent;
+import com.first1444.dashboard.ActiveComponentMultiplexer;
+import com.first1444.dashboard.BasicDashboard;
+import com.first1444.dashboard.advanced.Sendable;
+import com.first1444.dashboard.advanced.SendableHelper;
+import com.first1444.dashboard.value.BasicValue;
+import com.first1444.dashboard.value.ValueProperty;
+import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.ValueKey;
 import com.first1444.frc.util.valuemap.ValueMap;
-import edu.wpi.first.wpilibj.SendableBase;
-import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
+import org.jetbrains.annotations.NotNull;
 
-public class MutableValueMapSendable<T extends Enum<T> & ValueKey> extends SendableBase {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MutableValueMapSendable<T extends Enum<T> & ValueKey> implements Sendable<ActiveComponent> {
 
 	private final MutableValueMap<T> valueMap;
 
@@ -14,29 +24,44 @@ public class MutableValueMapSendable<T extends Enum<T> & ValueKey> extends Senda
 		valueMap = new MutableValueMap<>(clazz);
 	}
 
-	@Override
-	public void initSendable(SendableBuilder builder) {
-		builder.setSmartDashboardType("RobotPreferences");
-		for(T key : valueMap.getValueKeys()){
-			switch(key.getValueType()){
-				case DOUBLE:
-					builder.addDoubleProperty(key.getName(), () -> valueMap.getDouble(key), (value) -> valueMap.setDouble(key, value));
-					break;
-				case STRING:
-					builder.addStringProperty(key.getName(), () -> valueMap.getString(key), (value) -> valueMap.setString(key, value));
-					break;
-				case BOOLEAN:
-					builder.addBooleanProperty(key.getName(), () -> valueMap.getBoolean(key), (value) -> valueMap.setBoolean(key, value));
-					break;
-				default:
-					throw new UnsupportedOperationException("Unsupported value type: " + key.getValueType());
-			}
-		}
-	}
 	public MutableValueMap<T> getMutableValueMap(){
 		return valueMap;
 	}
 	public ValueMap<T> getImmutableValueMap(){
 		return valueMap.build();
+	}
+
+	@NotNull
+	@Override
+	public ActiveComponent init(@NotNull String s, @NotNull BasicDashboard basicDashboard) {
+		new SendableHelper(basicDashboard)
+				.setDashboardType("RobotPreferences");
+		List<ActiveComponent> components = new ArrayList<>();
+		for(T key : valueMap.getValueKeys()){
+			String name = key.getName();
+			switch(key.getValueType()){
+				case DOUBLE:
+				    components.add(new PropertyActiveComponent(name, basicDashboard.get(name), ValueProperty.create(
+				    		() -> BasicValue.makeDouble(valueMap.getDouble(key)),
+							(value) -> { valueMap.setDouble(key, ((Number)value.getValue()).doubleValue()); return null; }
+					)));
+					break;
+				case STRING:
+					components.add(new PropertyActiveComponent(name, basicDashboard.get(name), ValueProperty.create(
+							() -> BasicValue.makeString(valueMap.getString(key)),
+							(value) -> { valueMap.setString(key, ((String)value.getValue())); return null; }
+					)));
+					break;
+				case BOOLEAN:
+					components.add(new PropertyActiveComponent(name, basicDashboard.get(name), ValueProperty.create(
+							() -> BasicValue.makeBoolean(valueMap.getBoolean(key)),
+							(value) -> { valueMap.setBoolean(key, ((Boolean)value.getValue())); return null; }
+					)));
+					break;
+				default:
+					throw new UnsupportedOperationException("Unsupported value type: " + key.getValueType());
+			}
+		}
+		return new ActiveComponentMultiplexer(s, components);
 	}
 }

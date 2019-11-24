@@ -1,5 +1,6 @@
 package com.first1444.frc.robot2019;
 
+import com.first1444.dashboard.value.BasicValue;
 import com.first1444.frc.robot2019.subsystems.Lift;
 import com.first1444.frc.robot2019.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.util.valuemap.MutableValueMap;
@@ -25,7 +26,7 @@ public final class Constants {
 		);
 	}
 
-	public static final Map<String, Object> ROBOT_PREFERENCES_PROPERTIES = Map.of("Show search box", false);
+	public static final Map<String, BasicValue> ROBOT_PREFERENCES_PROPERTIES = Map.of("Show search box", BasicValue.FALSE);
 	public static final double VISION_PACKET_VALIDITY_TIME = .5;
 
 	// region CAN IDs

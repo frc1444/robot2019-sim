@@ -7,4 +7,5 @@ dependencies {
     api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
     api "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
     api "com.github.frc1444.robo-sim:gdx:$roboSimVersion"
+    api "com.github.frc1444.abstract-dashboard:wpi:$abstractDashboardVersion"
 }

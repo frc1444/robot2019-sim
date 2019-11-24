@@ -2,9 +2,7 @@ package com.first1444.frc.robot2019;
 
 import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.subsystems.HatchIntake;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.SimpleAction;
 
 public class MotorHatchIntake extends SimpleAction implements HatchIntake {

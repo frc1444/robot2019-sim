@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
+@Deprecated
 public class DynamicSendableChooser<V> extends SendableBase {
 	private static final String DEFAULT = "default";
 	private static final String SELECTED = "selected";

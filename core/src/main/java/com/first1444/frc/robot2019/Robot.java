@@ -7,6 +7,11 @@
 
 package com.first1444.frc.robot2019;
 
+import com.first1444.dashboard.advanced.implementations.chooser.ChooserSendable;
+import com.first1444.dashboard.advanced.implementations.chooser.MutableMappedChooserProvider;
+import com.first1444.dashboard.advanced.implementations.chooser.SimpleMappedChooserProvider;
+import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
+import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.frc.robot2019.actions.OperatorAction;
 import com.first1444.frc.robot2019.actions.SwerveCalibrateAction;
 import com.first1444.frc.robot2019.actions.SwerveDriveAction;
@@ -22,9 +27,8 @@ import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.subsystems.*;
-import com.first1444.frc.robot2019.subsystems.implementations.*;
+import com.first1444.frc.robot2019.subsystems.implementations.DefaultTaskSystem;
 import com.first1444.frc.robot2019.vision.VisionPacketListener;
-import com.first1444.frc.util.DynamicSendableChooser;
 import com.first1444.frc.util.OrientationSendable;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
@@ -38,16 +42,16 @@ import com.first1444.sim.api.scheduler.match.MatchScheduler;
 import com.first1444.sim.api.scheduler.match.MatchTime;
 import com.first1444.sim.api.sensors.Orientation;
 import com.first1444.sim.api.surroundings.SurroundingProvider;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import me.retrodaredevil.action.*;
-import me.retrodaredevil.controller.implementations.ControllerPartCreator;
-import me.retrodaredevil.controller.MutableControlConfig;
 import me.retrodaredevil.controller.ControlConfig;
+import me.retrodaredevil.controller.MutableControlConfig;
 import me.retrodaredevil.controller.PartUpdater;
+import me.retrodaredevil.controller.implementations.ControllerPartCreator;
 import me.retrodaredevil.controller.output.ControllerRumble;
 import me.retrodaredevil.controller.types.StandardControllerInput;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -83,12 +87,12 @@ public class Robot implements AdvancedIterativeRobot {
 	}
 	private final RobotInput robotInput;
 
-	private final DynamicSendableChooser<Perspective> autonomousPerspectiveChooser;
+	private final MutableMappedChooserProvider<Perspective> autonomousPerspectiveChooser;
 	private final TaskSystem taskSystem;
 	private final MatchScheduler matchScheduler;
 	
 	private final VisionPacketListener visionPacketListener;
-	private final EventSender soundSender;
+	private final TCPEventSender soundSender;
 
 	/** An {@link Action} that updates certain subsystems only when the robot is enabled*/
 	private final ActionMultiplexer enabledSubsystemUpdater;
@@ -133,7 +137,7 @@ public class Robot implements AdvancedIterativeRobot {
 		partUpdater.updateParts(controlConfig); // update this so when calling get methods don't throw exceptions
 
 		orientationSystem = new OrientationSystem(shuffleboardMap, rawOrientation, robotInput);
-		OrientationSendable.addOrientation(shuffleboardMap.getUserTab(), this::getOrientation);
+		OrientationSendable.addOrientation(shuffleboardMap.getUserTab(), getOrientation());
 
 		this.drive = new FourWheelSwerveDrive(fourWheelSwerveData);
 		final DefaultTaskSystem defaultTaskSystem = new DefaultTaskSystem(robotInput);
@@ -141,21 +145,32 @@ public class Robot implements AdvancedIterativeRobot {
 		final DefaultMatchScheduler defaultMatchScheduler = new DefaultMatchScheduler(driverStation, clock);
 		this.matchScheduler = defaultMatchScheduler;
 
-		final SendableChooser<Boolean> cameraIDSwitchedChooser = new SendableChooser<>();
-		cameraIDSwitchedChooser.setDefaultOption("NOT FLIPPED", false);
-		cameraIDSwitchedChooser.setDefaultOption("FLIPPED", true);
-		shuffleboardMap.getDevTab().add("Camera IDs Flipped", cameraIDSwitchedChooser);
+		final MutableMappedChooserProvider<Boolean> cameraIDSwitchedChooser = new SimpleMappedChooserProvider<>();
+		final Map<String, Boolean> cameraIDSwitchedMap = Map.of(
+				"NOT FLIPPED", false,
+				"FLIPPED", true
+		);
+		cameraIDSwitchedChooser.set(cameraIDSwitchedMap, "NOT FLIPPED");
+		System.out.println(cameraIDSwitchedChooser.getSelectedKey());
+		System.out.println(cameraIDSwitchedChooser.getDefaultKey());
+		System.out.println(cameraIDSwitchedChooser.getSelected());
+		shuffleboardMap.getDevTab().add("Camera IDs Flipped", new SendableComponent<>(new ChooserSendable(cameraIDSwitchedChooser)));
 		dimensions = new DynamicRobotDimensions(Constants.Dimensions.INSTANCE, cameraIDSwitchedChooser::getSelected);
 
 
-		autonomousPerspectiveChooser = new DynamicSendableChooser<>();
-		autonomousPerspectiveChooser.setDefaultOption("Auto Cam", null);
-		autonomousPerspectiveChooser.addOption("Hatch Cam", dimensions.getHatchManipulatorPerspective());
-		autonomousPerspectiveChooser.addOption("Cargo Cam", dimensions.getCargoManipulatorPerspective());
-		autonomousPerspectiveChooser.addOption("Driver Station (blind field centric)", Perspective.DRIVER_STATION);
-		autonomousPerspectiveChooser.addOption("Jumbotron on Right", Perspective.JUMBOTRON_ON_RIGHT);
-		autonomousPerspectiveChooser.addOption("Jumbotron on Left", Perspective.JUMBOTRON_ON_LEFT);
-		shuffleboardMap.getUserTab().add("Autonomous Perspective", autonomousPerspectiveChooser).withSize(2, 1).withPosition(9, 4);
+		autonomousPerspectiveChooser = new SimpleMappedChooserProvider<>();
+		Map<String, Perspective> autonomousPerspectiveMap = new HashMap<>(Map.of(
+				"Hatch Cam", dimensions.getHatchManipulatorPerspective(),
+				"Cargo Cam", dimensions.getCargoManipulatorPerspective(),
+				"Driver Station (blind field centric)", Perspective.DRIVER_STATION,
+				"Jumbotron on Right", Perspective.JUMBOTRON_ON_RIGHT,
+				"Jumbotron on Left", Perspective.JUMBOTRON_ON_LEFT
+		));
+		autonomousPerspectiveMap.put("Auto Cam", null);
+		autonomousPerspectiveChooser.set(autonomousPerspectiveMap, "Auto Cam");
+		shuffleboardMap.getUserTab().add("Autonomous Perspective", new SendableComponent<>(new ChooserSendable(autonomousPerspectiveChooser)), (metadata) -> new ComponentMetadataHelper(metadata)
+				.setSize(2, 1)
+				.setPosition(9, 4));
 
 		visionPacketListener = new VisionPacketListener(
 				clock,
@@ -202,6 +217,7 @@ public class Robot implements AdvancedIterativeRobot {
 	@Override public void testPeriodic() { }
 	@Override
 	public void close() {
+		soundSender.close();
 		visionPacketListener.interrupt();
 		System.out.println("close() method called! Robot program must be ending!");
 	}

@@ -14,6 +14,7 @@ import com.first1444.sim.api.surroundings.SurroundingProvider;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.SimpleAction;
 
+import static com.first1444.sim.api.MathUtil.minChange;
 import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
 import static com.first1444.sim.api.Transform.transformRadians;
 import static java.lang.Math.max;
@@ -110,6 +111,7 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 		Transform vision = surrounding.getTransform();
 		vision = transformRadians(vision.getPosition().getNormalized().times(vision.getPosition().getMagnitude() - targetDistanceBack), vision.getRotationRadians());
 		double yawDegrees = vision.getRotationDegrees() - desiredSurroundingRotationDegrees;
+		yawDegrees = minChange(yawDegrees, 0, 360);
 		double yawTurnAmount = max(-1, min(1, yawDegrees / -30));
 
 		Transform reversed = vision.getReversed();
@@ -117,13 +119,10 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
         Vector2 translate = transformRadians(reversed.getPosition().times(1, 3), reversed.getRotationRadians())
 				.getReversed().getPosition();
 
-        if(translate.getMagnitude() > 1){
+        if(translate.getMagnitude() > .1){
         	translate = translate.getNormalized();
 		} else {
         	translate = translate.getNormalized().times(translate.getMagnitude() / .1);
-        	if(translate.getMagnitude() > 1){
-        		translate = translate.getNormalized();
-			}
 		}
 
 		double distanceAway = vision.getPosition().getMagnitude();

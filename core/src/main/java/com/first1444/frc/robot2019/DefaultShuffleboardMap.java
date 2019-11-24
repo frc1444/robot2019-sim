@@ -1,30 +1,30 @@
 package com.first1444.frc.robot2019;
 
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import com.first1444.dashboard.shuffleboard.Shuffleboard;
+import com.first1444.dashboard.shuffleboard.ShuffleboardContainer;
 
 public class DefaultShuffleboardMap implements ShuffleboardMap {
-	private final ShuffleboardTab userTab;
-	private final ShuffleboardTab devTab;
-	private final ShuffleboardTab debugTab;
-	public DefaultShuffleboardMap(){
-		userTab = Shuffleboard.getTab("user");
-		devTab = Shuffleboard.getTab("dev");
-		debugTab = Shuffleboard.getTab("debug");
+	private final ShuffleboardContainer userTab;
+	private final ShuffleboardContainer devTab;
+	private final ShuffleboardContainer debugTab;
+	public DefaultShuffleboardMap(Shuffleboard shuffleboard){
+		userTab = shuffleboard.get("user");
+		devTab = shuffleboard.get("dev");
+		debugTab = shuffleboard.get("debug");
 	}
 
 	@Override
-	public ShuffleboardTab getUserTab() {
+	public ShuffleboardContainer getUserTab() {
 		return userTab;
 	}
 
 	@Override
-	public ShuffleboardTab getDevTab() {
+	public ShuffleboardContainer getDevTab() {
 		return devTab;
 	}
 
 	@Override
-	public ShuffleboardTab getDebugTab() {
+	public ShuffleboardContainer getDebugTab() {
 		return debugTab;
 	}
 }

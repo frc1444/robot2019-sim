@@ -6,13 +6,15 @@ import com.badlogic.gdx.physics.box2d.EdgeShape
 import com.badlogic.gdx.physics.box2d.FixtureDef
 import com.badlogic.gdx.physics.box2d.PolygonShape
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef
+import com.first1444.dashboard.shuffleboard.implementations.DefaultShuffleboard
+import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard
 import com.first1444.frc.robot2019.DefaultShuffleboardMap
 import com.first1444.frc.robot2019.Robot
 import com.first1444.frc.robot2019.subsystems.implementations.DummyCargoIntake
 import com.first1444.frc.robot2019.subsystems.implementations.DummyClimber
 import com.first1444.frc.robot2019.subsystems.implementations.DummyHatchIntake
 import com.first1444.frc.robot2019.subsystems.implementations.DummyLift
-import com.first1444.frc.util.reportmap.ShuffleboardReportMap
+import com.first1444.frc.util.reportmap.DashboardReportMap
 import com.first1444.sim.api.*
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData
 import com.first1444.sim.api.drivetrain.swerve.SwerveModule
@@ -27,8 +29,6 @@ import com.first1444.sim.gdx.init.RobotCreator
 import com.first1444.sim.gdx.init.UpdateableCreator
 import com.first1444.sim.gdx.velocity.AccelerateSetPointHandler
 import edu.wpi.first.networktables.NetworkTableInstance
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
 import me.retrodaredevil.action.Actions
 import me.retrodaredevil.controller.gdx.GdxControllerPartCreator
 import me.retrodaredevil.controller.gdx.IndexedControllerProvider
@@ -39,7 +39,7 @@ import me.retrodaredevil.controller.output.DisconnectedRumble
 import java.lang.Math.toRadians
 
 object MyRobotCreator : RobotCreator {
-    override fun create(data: RobotCreator.Data, updateableData: UpdateableCreator.Data): Updateable {
+    override fun create(data: RobotCreator.Data, updateableData: UpdateableCreator.Data): CloseableUpdateable {
         val startingPosition = Vector2(0.0, -6.6)
         val startingAngleRadians = toRadians(90.0)
 
@@ -50,7 +50,6 @@ object MyRobotCreator : RobotCreator {
             type = BodyDef.BodyType.DynamicBody
             position.set(startingPosition)
             angle = startingAngleRadians.toFloat()
-//            angle = 90 * MathUtils.degreesToRadians // start at 90 degrees to make this easy on the player. We will eventually add field centric controls
         }, listOf(FixtureDef().apply {
             restitution = .2f
             shape = PolygonShape().apply {
@@ -115,11 +114,13 @@ object MyRobotCreator : RobotCreator {
         val provider = IndexedControllerProvider(0)
         val creator = GdxControllerPartCreator(provider, true)
         val joystick = BaseStandardControllerInput(DefaultStandardControllerInputCreator(), creator, OptionValues.createImmutableBooleanOptionValue(true), OptionValues.createImmutableBooleanOptionValue(false))
-        val shuffleboardMap = DefaultShuffleboardMap()
-        val reportMap = ShuffleboardReportMap(shuffleboardMap.debugTab.getLayout("Report Map", BuiltInLayouts.kList));
+
+        val networkTable = NetworkTableInstance.getDefault()
+        networkTable.startServer()
+        val shuffleboard = DefaultShuffleboard(NetworkTableInstanceBasicDashboard(networkTable))
+        val shuffleboardMap = DefaultShuffleboardMap(shuffleboard)
+        val reportMap = DashboardReportMap(shuffleboardMap.debugTab.rawDashboard.getSubDashboard("Report Map"))
         val robotCreator = RunnableCreator.wrap {
-            val networkTable = NetworkTableInstance.getDefault()
-            networkTable.startServer()
             val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
                     data.driverStation, updateableData.clock,
                     shuffleboardMap,
@@ -134,17 +135,18 @@ object MyRobotCreator : RobotCreator {
                     listOf(robotRunnable, object : RobotRunnable {
                         override fun close() {
                             networkTable.stopServer()
+                            shuffleboard.onRemove()
                         }
 
                         override fun run() {
-                            Shuffleboard.update()
+                            shuffleboard.update()
                         }
 
                     })
             )
         }
-        return UpdateableMultiplexer(listOf(
-                entity,
+        return CloseableUpdateableMultiplexer(listOf(
+                CloseableUpdateable.fromUpdateable(entity),
                 RobotUpdateable(robotCreator)
         ))
     }

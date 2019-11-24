@@ -2,6 +2,10 @@ package com.first1444.frc.robot2019;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import com.first1444.dashboard.BasicDashboard;
+import com.first1444.dashboard.shuffleboard.*;
+import com.first1444.dashboard.shuffleboard.implementations.DefaultShuffleboard;
+import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.sensors.DefaultOrientation;
 import com.first1444.frc.robot2019.subsystems.swerve.ModuleConfig;
@@ -16,8 +20,8 @@ import com.first1444.sim.api.frc.BasicRobotRunnable;
 import com.first1444.sim.api.frc.FrcDriverStation;
 import com.first1444.sim.wpi.WpiClock;
 import com.first1444.sim.wpi.frc.WpiFrcDriverStation;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import me.retrodaredevil.controller.output.DualShockRumble;
 import me.retrodaredevil.controller.wpi.WpiInputCreator;
 
@@ -31,14 +35,17 @@ public class WpiRunnableCreator implements RunnableCreator {
 	}
 	@Override
 	public RobotRunnable createRunnable() {
-	    ShuffleboardMap shuffleboardMap = new DefaultShuffleboardMap();
+		BasicDashboard rootDashboard = new NetworkTableInstanceBasicDashboard(NetworkTableInstance.getDefault());
+		ActiveShuffleboard shuffleboard = new DefaultShuffleboard(rootDashboard);
+	    ShuffleboardMap shuffleboardMap = new DefaultShuffleboardMap(shuffleboard);
 		FrcDriverStation driverStation = new WpiFrcDriverStation(DriverStation.getInstance());
 
 		final MutableValueMapSendable<PidKey> drivePidSendable = new MutableValueMapSendable<>(PidKey.class);
 		final MutableValueMapSendable<PidKey> steerPidSendable = new MutableValueMapSendable<>(PidKey.class);
+		MetadataEditor robotPreferencesEditor = (metadata) -> new ComponentMetadataHelper(metadata).setProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
 		if(Constants.DEBUG) {
-			shuffleboardMap.getDevTab().add("Drive PID", drivePidSendable).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
-			shuffleboardMap.getDevTab().add("Steer PID", steerPidSendable).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
+			shuffleboardMap.getDevTab().add("Drive PID", new SendableComponent<>(drivePidSendable), robotPreferencesEditor);
+			shuffleboardMap.getDevTab().add("Steer PID", new SendableComponent<>(steerPidSendable), robotPreferencesEditor);
 		}
 
 		final MutableValueMap<PidKey> drivePid = drivePidSendable.getMutableValueMap();
@@ -52,7 +59,7 @@ public class WpiRunnableCreator implements RunnableCreator {
 				.setDouble(PidKey.I, .03);
 		final SwerveSetup swerve = Constants.Swerve2019.INSTANCE;
 //		final SwerveSetup swerve = Constants.Swerve2018.INSTANCE;
-		final ShuffleboardTab talonDebug = shuffleboardMap.getDebugTab();
+		final ShuffleboardContainer talonDebug = shuffleboardMap.getDebugTab();
 		final int quadCounts = swerve.getQuadCountsPerRevolution();
 		FourWheelSwerveDriveData data = new FourWheelSwerveDriveData(
 							new TalonSwerveModule("front right", swerve.getFRDriveCAN(), swerve.getFRSteerCAN(), quadCounts, drivePid, steerPid,
@@ -91,7 +98,7 @@ public class WpiRunnableCreator implements RunnableCreator {
 	private MutableValueMap<ModuleConfig> createModuleConfig(ShuffleboardMap shuffleboardMap, String name){
 		final MutableValueMapSendable<ModuleConfig> config = new MutableValueMapSendable<>(ModuleConfig.class);
 		if(Constants.DEBUG) {
-			shuffleboardMap.getDevTab().add(name, config).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
+			shuffleboardMap.getDevTab().add(name, new SendableComponent<>(config), (metadata) -> new ComponentMetadataHelper(metadata).setProperties(Constants.ROBOT_PREFERENCES_PROPERTIES));
 		}
 		return config.getMutableValueMap();
 	}

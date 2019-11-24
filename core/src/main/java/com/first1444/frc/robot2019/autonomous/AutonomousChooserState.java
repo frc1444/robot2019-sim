@@ -1,53 +1,64 @@
 package com.first1444.frc.robot2019.autonomous;
 
+import com.first1444.dashboard.advanced.implementations.chooser.ChooserSendable;
+import com.first1444.dashboard.advanced.implementations.chooser.MutableMappedChooserProvider;
+import com.first1444.dashboard.advanced.implementations.chooser.SimpleMappedChooserProvider;
+import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
+import com.first1444.dashboard.shuffleboard.SendableComponent;
+import com.first1444.dashboard.shuffleboard.ShuffleboardContainer;
+import com.first1444.dashboard.shuffleboard.implementations.ShuffleboardLayoutComponent;
 import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.ShuffleboardMap;
 import com.first1444.frc.robot2019.autonomous.actions.AutonomousInputWaitAction;
 import com.first1444.frc.robot2019.autonomous.options.AfterComplete;
 import com.first1444.frc.robot2019.autonomous.options.AutonomousType;
 import com.first1444.frc.robot2019.autonomous.options.LineUpType;
+import com.first1444.frc.robot2019.autonomous.options.StartingPosition;
 import com.first1444.frc.robot2019.deepspace.GamePieceType;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
-import com.first1444.frc.robot2019.autonomous.options.StartingPosition;
 import com.first1444.frc.robot2019.input.RobotInput;
-import com.first1444.frc.util.DynamicSendableChooser;
 import com.first1444.frc.util.valuemap.ValueMap;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
 
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import static java.util.Objects.requireNonNull;
 
 public class AutonomousChooserState {
 	private final AutonomousModeCreator autonomousModeCreator;
 	private final RobotInput robotInput;
-	
-	private final DynamicSendableChooser<AutonomousType> autonomousChooser;
-	private final DynamicSendableChooser<StartingPosition> startingPositionChooser;
-	private final DynamicSendableChooser<GamePieceType> gamePieceChooser;
-	private final DynamicSendableChooser<SlotLevel> levelChooser;
-	private final DynamicSendableChooser<LineUpType> lineUpChooser;
-	private final DynamicSendableChooser<AfterComplete> afterCompleteChooser;
+
+	private boolean readyToListen = false;
+	private final MutableMappedChooserProvider<AutonomousType> autonomousChooser;
+	private final MutableMappedChooserProvider<StartingPosition> startingPositionChooser;
+	private final MutableMappedChooserProvider<GamePieceType> gamePieceChooser;
+	private final MutableMappedChooserProvider<SlotLevel> levelChooser;
+	private final MutableMappedChooserProvider<LineUpType> lineUpChooser;
+	private final MutableMappedChooserProvider<AfterComplete> afterCompleteChooser;
 	private final ValueMap<AutonConfig> autonConfig;
 
 	public AutonomousChooserState(ShuffleboardMap shuffleboardMap, AutonomousModeCreator autonomousModeCreator, RobotInput robotInput){
 		this.autonomousModeCreator = autonomousModeCreator;
 		this.robotInput = robotInput;
-		final ShuffleboardLayout layout = shuffleboardMap.getUserTab()
-				.getLayout("Autonomous", BuiltInLayouts.kList)
-				.withSize(2, 5)
-				.withPosition(0, 0);
-		autonomousChooser = new DynamicSendableChooser<>();
-		startingPositionChooser = new DynamicSendableChooser<>();
-		gamePieceChooser = new DynamicSendableChooser<>();
-		levelChooser = new DynamicSendableChooser<>();
-		lineUpChooser = new DynamicSendableChooser<>();
-		afterCompleteChooser = new DynamicSendableChooser<>();
+		final ShuffleboardContainer layout = shuffleboardMap.getUserTab()
+				.add("Autonomous", ShuffleboardLayoutComponent.LIST, (metadata) -> new ComponentMetadataHelper(metadata)
+						.setSize(2, 5)
+						.setPosition(0, 0));
+		autonomousChooser = new SimpleMappedChooserProvider<>(this::onKeyChange);
+		startingPositionChooser = new SimpleMappedChooserProvider<>();
+		gamePieceChooser = new SimpleMappedChooserProvider<>();
+		levelChooser = new SimpleMappedChooserProvider<>();
+		lineUpChooser = new SimpleMappedChooserProvider<>();
+		afterCompleteChooser = new SimpleMappedChooserProvider<>();
 		final var valueMapSendable = new MutableValueMapSendable<>(AutonConfig.class);
-		layout.add("Config", valueMapSendable).withProperties(Constants.ROBOT_PREFERENCES_PROPERTIES);
+		layout.add("Config", new SendableComponent<>(valueMapSendable), (metadata) -> new ComponentMetadataHelper(metadata)
+				.setProperties(Constants.ROBOT_PREFERENCES_PROPERTIES));
 		autonConfig = valueMapSendable.getMutableValueMap();
 
 		addAutoOptions();
@@ -57,19 +68,29 @@ public class AutonomousChooserState {
 		updateLineUpChooser();
 		updateAfterCompleteChooser();
 
-		layout.add("Autonomous Chooser", autonomousChooser).withSize(2, 1).withPosition(0, 0);
-		layout.add("Starting Position Chooser", startingPositionChooser).withSize(2, 1).withPosition(0, 1);
-		layout.add("Game Piece Chooser", gamePieceChooser).withSize(2, 1).withPosition(0, 2);
-		layout.add("Level Chooser", levelChooser).withSize(2, 1).withPosition(0, 3);
-		layout.add("Line Up Chooser", lineUpChooser).withSize(2, 1).withPosition(0, 4);
-		layout.add("After Complete Chooser", afterCompleteChooser).withSize(2, 1).withPosition(0, 5);
-		autonomousChooser.addListener(newSelectionKey -> {
-			updateStartingPositionChooser();
-			updateGamePieceChooser();
-			updateLevelChooser();
-			updateLineUpChooser();
-			updateAfterCompleteChooser();
-		});
+		layout.add("Autonomous Chooser", new SendableComponent<>(new ChooserSendable(autonomousChooser)),
+				(metadata) -> new ComponentMetadataHelper(metadata).setSize(2, 1).setPosition(0, 0));
+		layout.add("Starting Position Chooser", new SendableComponent<>(new ChooserSendable(startingPositionChooser)),
+				(metadata) -> new ComponentMetadataHelper(metadata).setSize(2, 1).setPosition(0, 1));
+		layout.add("Game Piece Chooser", new SendableComponent<>(new ChooserSendable(gamePieceChooser)),
+				(metadata) -> new ComponentMetadataHelper(metadata).setSize(2, 1).setPosition(0, 2));
+		layout.add("Level Chooser", new SendableComponent<>(new ChooserSendable(levelChooser)),
+				(metadata) -> new ComponentMetadataHelper(metadata).setSize(2, 1).setPosition(0, 3));
+		layout.add("Line Up Chooser", new SendableComponent<>(new ChooserSendable(lineUpChooser)),
+				(metadata) -> new ComponentMetadataHelper(metadata).setSize(2, 1).setPosition(0, 4));
+		layout.add("After Complete Chooser", new SendableComponent<>(new ChooserSendable(afterCompleteChooser)),
+				(metadata) -> new ComponentMetadataHelper(metadata).setSize(2, 1).setPosition(0, 5));
+		readyToListen = true;
+	}
+	private void onKeyChange(String key){
+		if(!readyToListen){
+			return;
+		}
+		updateStartingPositionChooser();
+		updateGamePieceChooser();
+		updateLevelChooser();
+		updateLineUpChooser();
+		updateAfterCompleteChooser();
 	}
 	public Action createAutonomousAction(double startingOrientationDegrees){
 		final AutonomousType type = autonomousChooser.getSelected();
@@ -100,7 +121,7 @@ public class AutonomousChooserState {
 		return Actions.createRunOnce(() -> System.out.println("This is the autonomous action because there was an exception when creating the one we wanted."));
 	}
 	private void addAutoOptions(){
-		autonomousChooser.setDefaultOption(AutonomousType.DO_NOTHING.getName(), AutonomousType.DO_NOTHING);
+		autonomousChooser.addOption(AutonomousType.DO_NOTHING.getName(), AutonomousType.DO_NOTHING, true);
 		for(AutonomousType type : AutonomousType.values()){
 			if(type != AutonomousType.DO_NOTHING){
 				autonomousChooser.addOption(type.getName(), type);
@@ -108,64 +129,81 @@ public class AutonomousChooserState {
 		}
 	}
 	private void updateStartingPositionChooser(){
-		startingPositionChooser.reset();
+		Map<String, StartingPosition> selectionMap = new LinkedHashMap<>();
+		String defaultKey = null;
 		final AutonomousType type = autonomousChooser.getSelected();
 		final Collection<StartingPosition> startingPositions = type.getStartingPositions();
 		if(startingPositions.isEmpty()){
-			startingPositionChooser.setDefaultOption("Neither", null);
+			selectionMap.put("Neither", null);
+			defaultKey = "Neither";
 		} else {
 			for(StartingPosition position : startingPositions){
-				startingPositionChooser.setDefaultOption(position.toString(), position);
+				selectionMap.put(position.toString(), position);
+				defaultKey = position.toString();
 			}
 		}
+		startingPositionChooser.set(selectionMap, requireNonNull(defaultKey));
 	}
 	private void updateGamePieceChooser(){
-		gamePieceChooser.reset();
+	    Map<String, GamePieceType> selectionMap = new LinkedHashMap<>();
+	    String defaultKey = null;
 		final AutonomousType type = autonomousChooser.getSelected();
 		final Collection<GamePieceType> gamePieces = type.getGamePieces();
 		if(gamePieces.isEmpty()){
-			gamePieceChooser.setDefaultOption("Neither", null);
+			selectionMap.put("Neither", null);
+			defaultKey = "Neither";
 		} else {
 			for(GamePieceType gamePiece : gamePieces){
-				gamePieceChooser.setDefaultOption(gamePiece.toString(), gamePiece);
+				selectionMap.put(gamePiece.toString(), gamePiece);
+				defaultKey = gamePiece.toString();
 			}
 		}
+		gamePieceChooser.set(selectionMap, requireNonNull(defaultKey));
 	}
 	private void updateLevelChooser(){
-		levelChooser.reset();
+	    Map<String, SlotLevel> selectionMap = new LinkedHashMap<>();
+	    String defaultKey = null;
 		final AutonomousType type = autonomousChooser.getSelected();
 		final Collection<SlotLevel> slotLevels = type.getSlotLevels();
 		if(slotLevels.isEmpty()){
-			levelChooser.setDefaultOption("None", null);
+			selectionMap.put("None", null);
+			defaultKey = "None";
 		} else {
 			for(SlotLevel level : slotLevels){
-				levelChooser.setDefaultOption(level.toString(), level);
+			    selectionMap.put(level.toString(), level);
+			    defaultKey = level.toString();
 			}
 		}
+		levelChooser.set(selectionMap, requireNonNull(defaultKey));
 	}
 	private void updateLineUpChooser(){
-		lineUpChooser.reset();
+	    Map<String, LineUpType> selectionMap = new HashMap<>();
+	    String defaultKey = null;
 		final AutonomousType type = autonomousChooser.getSelected();
 		final Collection<LineUpType> lineUpTypes = type.getLineUpTypes();
 		if(lineUpTypes.isEmpty()){
 			throw new AssertionError("lineUpTypes should never be empty!");
 		}
 		for(LineUpType lineUpType : lineUpTypes){
-			lineUpChooser.setDefaultOption(lineUpType.toString(), lineUpType);
+		    selectionMap.put(lineUpType.toString(), lineUpType);
+		    defaultKey = lineUpType.toString();
 		}
 		if(lineUpTypes.contains(LineUpType.NO_VISION)){
-			lineUpChooser.setDefaultOption(LineUpType.NO_VISION.toString(), LineUpType.NO_VISION);
+			defaultKey = LineUpType.NO_VISION.toString();
 		}
+		lineUpChooser.set(selectionMap, requireNonNull(defaultKey));
 	}
 	private void updateAfterCompleteChooser(){
-		afterCompleteChooser.reset();
+	    Map<String, AfterComplete> selectionMap = new HashMap<>();
 		final AutonomousType type = autonomousChooser.getSelected();
 		final Collection<AfterComplete> afterCompleteOptions = type.getAfterCompleteOptions();
-		
-		afterCompleteChooser.setDefaultOption("Do nothing", null);
+		final String doNothingString = "Do nothing";
+		selectionMap.put(doNothingString, null);
+
 		for(AfterComplete afterComplete : afterCompleteOptions){
-			afterCompleteChooser.addOption(afterComplete.toString(), afterComplete);
+		    selectionMap.put(afterComplete.toString(), afterComplete);
 		}
+		afterCompleteChooser.set(selectionMap, doNothingString);
 	}
 	
 }

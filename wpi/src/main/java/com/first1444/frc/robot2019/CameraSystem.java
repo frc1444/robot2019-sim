@@ -1,5 +1,8 @@
 package com.first1444.frc.robot2019;
 
+import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
+import com.first1444.dashboard.shuffleboard.SendableComponent;
+import com.first1444.dashboard.wpi.VideoSourceSendable;
 import com.first1444.frc.robot2019.subsystems.TaskSystem;
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
@@ -48,7 +51,8 @@ public class CameraSystem extends SimpleAction {
 			videoSink.setCompression(COMPRESSION_LEVEL);
 			videoSink.setDefaultCompression(COMPRESSION_LEVEL);
 		}
-		shuffleboardMap.getUserTab().add("My Toggle Camera", source).withSize(7, 5).withPosition(2, 0);
+		shuffleboardMap.getUserTab().add("My Toggle Camera", new SendableComponent<>(new VideoSourceSendable("camera_server://" + source.getName())),
+				(metadata) -> new ComponentMetadataHelper(metadata).setSize(7, 5).setPosition(2, 0));
 	}
 	private void setupCamera(UsbCamera camera){
 		camera.setConnectVerbose(0); // so it doesn't spam the console with annoying messages if it's disconnected

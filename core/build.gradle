@@ -13,6 +13,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.zeromq/jeromq
     api group: 'org.zeromq', name: 'jeromq', version: '0.4.3'
 
+    api "com.github.frc1444:abstract-dashboard:$abstractDashboardVersion"
+    api "com.github.frc1444.abstract-dashboard:core:$abstractDashboardVersion"
 
     api "edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion"
     api "edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion"

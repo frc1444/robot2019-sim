@@ -1,9 +1,10 @@
 package com.first1444.frc.robot2019;
 
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+
+import com.first1444.dashboard.shuffleboard.ShuffleboardContainer;
 
 public interface ShuffleboardMap {
-	ShuffleboardTab getUserTab();
-	ShuffleboardTab getDevTab();
-	ShuffleboardTab getDebugTab();
+	ShuffleboardContainer getUserTab();
+	ShuffleboardContainer getDevTab();
+	ShuffleboardContainer getDebugTab();
 }

@@ -5,6 +5,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.*;
+import com.first1444.dashboard.shuffleboard.ShuffleboardContainer;
 import com.first1444.frc.robot2019.subsystems.swerve.ModuleConfig;
 import com.first1444.sim.api.MathUtil;
 import com.first1444.frc.util.pid.PidKey;
@@ -42,7 +43,7 @@ public class TalonSwerveModule implements SwerveModule {
 
 	public TalonSwerveModule(String name, int driveID, int steerID, int quadCountsPerRevolution,
 							 MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid,
-							 MutableValueMap<ModuleConfig> moduleConfig, ShuffleboardTab debugTab) {
+							 MutableValueMap<ModuleConfig> moduleConfig, ShuffleboardContainer debugTab) {
 		this.name = name;
 		this.quadCountsPerRevolution = quadCountsPerRevolution;
 		
