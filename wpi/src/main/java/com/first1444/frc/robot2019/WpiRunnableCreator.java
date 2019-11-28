@@ -3,8 +3,12 @@ package com.first1444.frc.robot2019;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.first1444.dashboard.BasicDashboard;
-import com.first1444.dashboard.shuffleboard.*;
-import com.first1444.dashboard.shuffleboard.implementations.DefaultShuffleboard;
+import com.first1444.dashboard.bundle.ActiveDashboardBundle;
+import com.first1444.dashboard.bundle.DefaultDashboardBundle;
+import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
+import com.first1444.dashboard.shuffleboard.MetadataEditor;
+import com.first1444.dashboard.shuffleboard.SendableComponent;
+import com.first1444.dashboard.shuffleboard.ShuffleboardContainer;
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.sensors.DefaultOrientation;
@@ -13,6 +17,7 @@ import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 import com.first1444.sim.api.RobotRunnable;
+import com.first1444.sim.api.RobotRunnableMultiplexer;
 import com.first1444.sim.api.RunnableCreator;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot;
@@ -22,22 +27,24 @@ import com.first1444.sim.wpi.WpiClock;
 import com.first1444.sim.wpi.frc.WpiFrcDriverStation;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
+import me.retrodaredevil.action.Actions;
 import me.retrodaredevil.controller.output.DualShockRumble;
 import me.retrodaredevil.controller.wpi.WpiInputCreator;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 public class WpiRunnableCreator implements RunnableCreator {
 
 	@Override
 	public void prematureInit() {
-
 	}
+
 	@Override
 	public RobotRunnable createRunnable() {
 		BasicDashboard rootDashboard = new NetworkTableInstanceBasicDashboard(NetworkTableInstance.getDefault());
-		ActiveShuffleboard shuffleboard = new DefaultShuffleboard(rootDashboard);
-	    ShuffleboardMap shuffleboardMap = new DefaultShuffleboardMap(shuffleboard);
+		ActiveDashboardBundle bundle = new DefaultDashboardBundle(rootDashboard);
+	    ShuffleboardMap shuffleboardMap = new DefaultShuffleboardMap(bundle.getShuffleboard());
 		FrcDriverStation driverStation = new WpiFrcDriverStation(DriverStation.getInstance());
 
 		final MutableValueMapSendable<PidKey> drivePidSendable = new MutableValueMapSendable<>(PidKey.class);
@@ -93,7 +100,20 @@ public class WpiRunnableCreator implements RunnableCreator {
 				new CameraSystem(shuffleboardMap, () -> robotReference[0].getTaskSystem())
 		);
 		robotReference[0] = robot;
-		return new BasicRobotRunnable(new AdvancedIterativeRobotBasicRobot(robot), driverStation);
+		return new RobotRunnableMultiplexer(Arrays.asList(
+				new BasicRobotRunnable(new AdvancedIterativeRobotBasicRobot(robot), driverStation),
+				new RobotRunnable() {
+					@Override
+					public void run() {
+						bundle.update();
+					}
+
+					@Override
+					public void close() {
+						bundle.onRemove();
+					}
+				}
+		));
 	}
 	private MutableValueMap<ModuleConfig> createModuleConfig(ShuffleboardMap shuffleboardMap, String name){
 		final MutableValueMapSendable<ModuleConfig> config = new MutableValueMapSendable<>(ModuleConfig.class);

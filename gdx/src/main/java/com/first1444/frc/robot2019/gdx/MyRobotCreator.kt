@@ -6,6 +6,7 @@ import com.badlogic.gdx.physics.box2d.EdgeShape
 import com.badlogic.gdx.physics.box2d.FixtureDef
 import com.badlogic.gdx.physics.box2d.PolygonShape
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef
+import com.first1444.dashboard.bundle.DefaultDashboardBundle
 import com.first1444.dashboard.shuffleboard.implementations.DefaultShuffleboard
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard
 import com.first1444.frc.robot2019.DefaultShuffleboardMap
@@ -117,8 +118,8 @@ object MyRobotCreator : RobotCreator {
 
         val networkTable = NetworkTableInstance.getDefault()
         networkTable.startServer()
-        val shuffleboard = DefaultShuffleboard(NetworkTableInstanceBasicDashboard(networkTable))
-        val shuffleboardMap = DefaultShuffleboardMap(shuffleboard)
+        val bundle = DefaultDashboardBundle(NetworkTableInstanceBasicDashboard(networkTable))
+        val shuffleboardMap = DefaultShuffleboardMap(bundle.shuffleboard)
         val reportMap = DashboardReportMap(shuffleboardMap.debugTab.rawDashboard.getSubDashboard("Report Map"))
         val robotCreator = RunnableCreator.wrap {
             val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
@@ -129,17 +130,17 @@ object MyRobotCreator : RobotCreator {
                     swerveDriveData,
                     DummyLift(reportMap), DummyCargoIntake(reportMap), DummyHatchIntake(reportMap), DummyClimber(reportMap),
                     VisionProvider(entity, 2.0, updateableData.clock),
-                    Actions.createRunForeverRecyclable { }
+                    Actions.createRunForever { bundle.update() }
             )), data.driverStation)
             RobotRunnableMultiplexer(
                     listOf(robotRunnable, object : RobotRunnable {
                         override fun close() {
+                            bundle.onRemove()
                             networkTable.stopServer()
-                            shuffleboard.onRemove()
                         }
 
                         override fun run() {
-                            shuffleboard.update()
+                            bundle.update()
                         }
 
                     })

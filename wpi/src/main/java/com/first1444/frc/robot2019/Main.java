@@ -1,5 +1,6 @@
 package com.first1444.frc.robot2019;
 
+import com.first1444.sim.wpi.frc.RoboSimRobot;
 import com.first1444.sim.wpi.frc.WpiTimedRobot;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -19,6 +20,6 @@ public final class Main {
      * <p>If you change your main robot class, change the parameter type.
      */
     public static void main(String... args) {
-        RobotBase.startRobot(() -> new WpiTimedRobot(new WpiRunnableCreator(), TimedRobot.kDefaultPeriod));
+        RobotBase.startRobot(() -> new RoboSimRobot(new WpiRunnableCreator(), TimedRobot.kDefaultPeriod));
     }
 }

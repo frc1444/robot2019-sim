@@ -34,8 +34,7 @@ public class MutableValueMapSendable<T extends Enum<T> & ValueKey> implements Se
 	@NotNull
 	@Override
 	public ActiveComponent init(@NotNull String s, @NotNull BasicDashboard basicDashboard) {
-		new SendableHelper(basicDashboard)
-				.setDashboardType("RobotPreferences");
+		new SendableHelper(basicDashboard).setType("RobotPreferences");
 		List<ActiveComponent> components = new ArrayList<>();
 		for(T key : valueMap.getValueKeys()){
 			String name = key.getName();

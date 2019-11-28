@@ -29,7 +29,7 @@ import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.robot2019.subsystems.*;
 import com.first1444.frc.robot2019.subsystems.implementations.DefaultTaskSystem;
 import com.first1444.frc.robot2019.vision.VisionPacketListener;
-import com.first1444.frc.util.OrientationSendable;
+import com.first1444.frc.util.OrientationSendableHelper;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
@@ -137,7 +137,7 @@ public class Robot implements AdvancedIterativeRobot {
 		partUpdater.updateParts(controlConfig); // update this so when calling get methods don't throw exceptions
 
 		orientationSystem = new OrientationSystem(shuffleboardMap, rawOrientation, robotInput);
-		OrientationSendable.addOrientation(shuffleboardMap.getUserTab(), getOrientation());
+		OrientationSendableHelper.addOrientation(shuffleboardMap.getUserTab(), getOrientation());
 
 		this.drive = new FourWheelSwerveDrive(fourWheelSwerveData);
 		final DefaultTaskSystem defaultTaskSystem = new DefaultTaskSystem(robotInput);
