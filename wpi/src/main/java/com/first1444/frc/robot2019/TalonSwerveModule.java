@@ -11,10 +11,12 @@ import com.first1444.sim.api.MathUtil;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.ValueMap;
+import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.drivetrain.swerve.SwerveModule;
 import com.first1444.sim.api.event.EventHandler;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.jetbrains.annotations.NotNull;
 
 import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
 import static java.lang.Math.*;
@@ -37,7 +39,7 @@ public class TalonSwerveModule implements SwerveModule {
 	private double targetPositionDegrees = 0;
 	
 	/** The total distance gone. This is changed in another thread and should only be read*/
-	private volatile double totalDistanceGone = 0;
+	private volatile double totalDistanceGone = 0; // TODO for 2020, when we aren't using SwerveTracker, we won't need this, we can just use the encoder counts, we don't need to abs the integral of its derivative
 	/** The most recent value for the encoder counts on the steer module. This is changed in another thread and should only be read*/
 	private volatile int steerEncoderCountsCache = 0;
 
@@ -106,7 +108,7 @@ public class TalonSwerveModule implements SwerveModule {
 	
 	@Override
 	public void run() {
-		SmartDashboard.putNumber("encoder " + name, steer.getSensorCollection().getAnalogInRaw());
+		SmartDashboard.putNumber("encoder " + name, steer.getSensorCollection().getAnalogInRaw()); // TODO use abstract-dashboard for this
 		final double speedMultiplier;
 		
 		{ // steer code
@@ -154,6 +156,11 @@ public class TalonSwerveModule implements SwerveModule {
 	}
 
 	@Override
+	public void setTargetAngle(@NotNull Rotation2 rotation2) {
+		setTargetAngleDegrees(rotation2.getDegrees());
+	}
+
+	@Override
 	public void setTargetAngleDegrees(double positionDegrees) {
 		this.targetPositionDegrees = positionDegrees;
 	}
@@ -161,6 +168,12 @@ public class TalonSwerveModule implements SwerveModule {
 	@Override
 	public void setTargetAngleRadians(double angleRadians) {
 		setTargetAngleDegrees(toDegrees(angleRadians));
+	}
+
+	@NotNull
+	@Override
+	public Rotation2 getCurrentAngle() {
+		return Rotation2.fromDegrees(getCurrentAngleDegrees());
 	}
 
 	@Override

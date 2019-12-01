@@ -1,11 +1,19 @@
 package com.first1444.frc.robot2019.subsystems.swerve;
 
+import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.drivetrain.swerve.SwerveModule;
 import com.first1444.sim.api.event.EventHandler;
+import org.jetbrains.annotations.NotNull;
 //import org.jetbrains.annotations.NotNull;
 
 public class DummySwerveModule implements SwerveModule {
 	public DummySwerveModule() {
+	}
+
+	@NotNull
+	@Override
+	public Rotation2 getCurrentAngle() {
+		return Rotation2.ZERO;
 	}
 
 	@Override
@@ -36,6 +44,10 @@ public class DummySwerveModule implements SwerveModule {
 	@Override
 	public void run() {
 
+	}
+
+	@Override
+	public void setTargetAngle(@NotNull Rotation2 rotation2) {
 	}
 
 	@Override

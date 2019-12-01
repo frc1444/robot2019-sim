@@ -35,6 +35,7 @@ import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
 import com.first1444.sim.api.frc.AdvancedIterativeRobot;
+import com.first1444.sim.api.frc.AdvancedIterativeRobotAdapter;
 import com.first1444.sim.api.frc.FrcDriverStation;
 import com.first1444.sim.api.frc.FrcMode;
 import com.first1444.sim.api.scheduler.match.DefaultMatchScheduler;
@@ -61,7 +62,7 @@ import java.util.Map;
  * creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot implements AdvancedIterativeRobot {
+public class Robot extends AdvancedIterativeRobotAdapter {
 
 	private final FrcDriverStation driverStation;
 	private final Clock clock;
@@ -175,8 +176,8 @@ public class Robot implements AdvancedIterativeRobot {
 		visionPacketListener = new VisionPacketListener(
 				clock,
 				Map.of(
-						dimensions.getHatchCameraID(), dimensions.getHatchManipulatorPerspective().getOffsetDegrees(),
-						dimensions.getCargoCameraID(), dimensions.getCargoManipulatorPerspective().getOffsetDegrees()
+						dimensions.getHatchCameraID(), dimensions.getHatchManipulatorPerspective().getOffset(),
+						dimensions.getCargoCameraID(), dimensions.getCargoManipulatorPerspective().getOffset()
 				),
 				"10.14.44.5", 5801
 		);
@@ -204,6 +205,7 @@ public class Robot implements AdvancedIterativeRobot {
 //		testAction = new TestAction(robotInput);
 		autonomousChooserState = new AutonomousChooserState(
 				shuffleboardMap,  // this will add stuff to the dashboard
+				clock,
 				new AutonomousModeCreator(new RobotAutonActionCreator(this), dimensions),
 				robotInput
 		);
@@ -212,9 +214,6 @@ public class Robot implements AdvancedIterativeRobot {
 		System.out.println("Finished constructor");
 	}
 
-	@Override public void disabledPeriodic() { }
-	@Override public void teleopPeriodic() { }
-	@Override public void testPeriodic() { }
 	@Override
 	public void close() {
 		soundSender.close();
@@ -267,7 +266,7 @@ public class Robot implements AdvancedIterativeRobot {
 			cargoIntake.stow();
 		});
 		matchScheduler.schedule(new MatchTime(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END), () -> {
-			new TimedCargoIntake(400, this::getCargoIntake, 1); // TODO add this to something
+			new TimedCargoIntake(clock, .4, cargoIntake, 1); // TODO add this to something // I don't remember why I wrote this comment or what something is... 2019.11.29
 		}); // good
 		matchScheduler.schedule(new MatchTime(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END), () -> {
 			System.out.println("Dropping hatch"); // good
@@ -288,7 +287,7 @@ public class Robot implements AdvancedIterativeRobot {
 	public void autonomousInit() {
 		actionChooser.setNextAction(
 				new Actions.ActionQueueBuilder(
-						autonomousChooserState.createAutonomousAction(orientationSystem.getOrientation().getOrientationDegrees()),
+						autonomousChooserState.createAutonomousAction(orientationSystem.getOrientation().getOrientation()),
 						teleopAction
 				) .immediatelyDoNextWhenDone(true) .canBeDone(false) .canRecycle(false) .build()
 		);

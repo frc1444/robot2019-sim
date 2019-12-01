@@ -19,6 +19,8 @@ import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.util.valuemap.ValueMap;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
+import com.first1444.sim.api.Clock;
+import com.first1444.sim.api.Rotation2;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
 
@@ -31,6 +33,7 @@ import java.util.Map;
 import static java.util.Objects.requireNonNull;
 
 public class AutonomousChooserState {
+    private final Clock clock;
 	private final AutonomousModeCreator autonomousModeCreator;
 	private final RobotInput robotInput;
 
@@ -43,7 +46,8 @@ public class AutonomousChooserState {
 	private final MutableMappedChooserProvider<AfterComplete> afterCompleteChooser;
 	private final ValueMap<AutonConfig> autonConfig;
 
-	public AutonomousChooserState(ShuffleboardMap shuffleboardMap, AutonomousModeCreator autonomousModeCreator, RobotInput robotInput){
+	public AutonomousChooserState(ShuffleboardMap shuffleboardMap, Clock clock, AutonomousModeCreator autonomousModeCreator, RobotInput robotInput){
+		this.clock = clock;
 		this.autonomousModeCreator = autonomousModeCreator;
 		this.robotInput = robotInput;
 		final ShuffleboardContainer layout = shuffleboardMap.getUserTab()
@@ -92,7 +96,7 @@ public class AutonomousChooserState {
 		updateLineUpChooser();
 		updateAfterCompleteChooser();
 	}
-	public Action createAutonomousAction(double startingOrientationDegrees){
+	public Action createAutonomousAction(Rotation2 startingOrientation){
 		final AutonomousType type = autonomousChooser.getSelected();
 		if(type == null){
 			throw new NullPointerException("The autonomous type cannot be null!");
@@ -106,11 +110,12 @@ public class AutonomousChooserState {
 			return Actions.createLogAndEndTryCatchAction(
 					new Actions.ActionQueueBuilder(
 							new AutonomousInputWaitAction(
-									Math.round(autonConfig.getDouble(AutonConfig.WAIT_TIME) * 1000),
+							        clock,
+									autonConfig.getDouble(AutonConfig.WAIT_TIME),
 									() -> robotInput.getAutonomousWaitButton().isDown(),
 									() -> robotInput.getAutonomousStartButton().isDown()
 							),
-							autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, lineUpType, afterComplete, startingOrientationDegrees)
+							autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, lineUpType, afterComplete, startingOrientation)
 					).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build(),
 					Throwable.class, new PrintWriter(System.err)
 			);

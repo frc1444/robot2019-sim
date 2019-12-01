@@ -3,6 +3,7 @@ package com.first1444.frc.robot2019.autonomous;
 import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.subsystems.Lift;
+import com.first1444.sim.api.Rotation2;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
 import me.retrodaredevil.action.WhenDone;
@@ -34,20 +35,20 @@ public class TestAutonActionCreator implements AutonActionCreator {
 	}
 	
 	@Override
-	public Action createTurnToOrientation(double desiredOrientation) {
-		return createLogMessageAction("Turning to orientation: " + desiredOrientation + " degrees");
+	public Action createTurnToOrientation(Rotation2 desiredOrientation) {
+		return createLogMessageAction("Turning to orientation: " + desiredOrientation);
 	}
 	
 	@Override
-	public Action createGoStraight(double distanceMeters, double speed, double angleDegrees) {
+	public Action createGoStraight(double distanceMeters, double speed, Rotation2 angle) {
 		return createLogMessageAction("Going straight for " + distanceMeters + " meters at " + Constants.DECIMAL_FORMAT.format(speed)
-				+ " with " + angleDegrees + " degrees heading.");
+				+ " with " + angle + " heading.");
 	}
 	
 	@Override
-	public Action createGoStraight(double distanceMeters, double speed, double angleDegrees, double faceDirectionDegrees) {
+	public Action createGoStraight(double distanceMeters, double speed, Rotation2 angle, Rotation2 faceDirection) {
 		return createLogMessageAction("Going straight for " + distanceMeters + " meters at " + Constants.DECIMAL_FORMAT.format(speed)
-				+ " with " + angleDegrees + " degrees heading while facing " + faceDirectionDegrees + " degrees.");
+				+ " with " + angle + " heading while facing " + faceDirection);
 	}
 	
 	@Override

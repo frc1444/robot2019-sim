@@ -2,48 +2,51 @@ package com.first1444.frc.robot2019.autonomous.actions;
 
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDistanceTracker;
 import com.first1444.sim.api.MathUtil;
+import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
 import com.first1444.sim.api.sensors.Orientation;
 import me.retrodaredevil.action.SimpleAction;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
 import static java.lang.Math.*;
 
+@Deprecated
 public class GoStraight extends SimpleAction {
 	private final double distanceMeters;
-	private final double speed;
-//	private final double directionDegrees;
-	private final double x, y;
-	private final Double faceDirection;
-	private final Supplier<SwerveDrive> driveSupplier;
-	private final Supplier<Orientation> orientationSupplier;
+	private final Vector2 translate;
+	@Nullable
+	private final Rotation2 faceDirection;
+	private final SwerveDrive drive;
+	private final Orientation orientation;
 	
 	private SwerveDistanceTracker tracker = null;
 
 
-	public GoStraight(double distanceMeters, double speed, double x, double y, Double faceDirectionDegrees,
-					  Supplier<SwerveDrive> driveSupplier, Supplier<Orientation> orientationSupplier) {
+	private GoStraight(
+			double distanceMeters, Vector2 translate, Rotation2 faceDirection,
+			SwerveDrive drive, Orientation orientation
+	) {
 		super(true);
 		this.distanceMeters = distanceMeters;
-		this.speed = speed;
-		this.x = x;
-		this.y = y;
-		this.faceDirection = faceDirectionDegrees;
-		this.driveSupplier = driveSupplier;
-		this.orientationSupplier = orientationSupplier;
+		this.translate = translate;
+		this.faceDirection = faceDirection;
+		this.drive = drive;
+		this.orientation = orientation;
 	}
-	public static GoStraight createGoStraightAtHeading(double distanceMeters, double speed, double headingDegrees, Double faceDirectionDegrees,
-													   Supplier<SwerveDrive> driveSupplier, Supplier<Orientation> orientationSupplier){
-		final double radians = toRadians(headingDegrees);
-		return new GoStraight(distanceMeters, speed, cos(radians), sin(radians), faceDirectionDegrees, driveSupplier, orientationSupplier);
+	public static GoStraight createGoStraightAtHeading(
+			double distanceMeters, double speed, Rotation2 heading, Rotation2 faceDirection,
+			SwerveDrive drive, Orientation orientation
+	){
+		return new GoStraight(distanceMeters, new Vector2(heading.getCos() * speed, heading.getSin() * speed), faceDirection, drive, orientation);
 	}
 	
 	@Override
 	protected void onStart() {
 		super.onStart();
-		tracker = new SwerveDistanceTracker(driveSupplier.get());
+		tracker = new SwerveDistanceTracker(drive);
 	}
 	
 	@Override
@@ -52,15 +55,15 @@ public class GoStraight extends SimpleAction {
 
 		final SwerveDrive drive = tracker.getDrive();
 		final double minChange;
-		final Orientation orientation = orientationSupplier.get();
-		final double currentOrientation = orientation.getOrientationDegrees();
+//		final double currentOrientation = orientation.getOrientationDegrees();
+		final Rotation2 currentOrientation = orientation.getOrientation();
 		if(faceDirection != null) {
-			minChange = MathUtil.minChange(faceDirection, currentOrientation, 360);
+			minChange = MathUtil.minChange(faceDirection.getDegrees(), currentOrientation.getDegrees(), 360);
 		} else {
 			minChange = 0;
 		}
 		final double turnAmount = .75 * max(-1, min(1, minChange / -40));
-		drive.setControl(new Vector2(x * speed, y * speed).rotateDegrees(-currentOrientation), turnAmount, 1);
+		drive.setControl(translate.rotate(currentOrientation.unaryMinus()), turnAmount, 1);
 
 		setDone(tracker.calculateDistance() >= distanceMeters);
 

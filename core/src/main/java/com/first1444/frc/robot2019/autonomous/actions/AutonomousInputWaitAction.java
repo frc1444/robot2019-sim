@@ -1,6 +1,7 @@
 package com.first1444.frc.robot2019.autonomous.actions;
 
 import com.first1444.frc.robot2019.actions.TimedAction;
+import com.first1444.sim.api.Clock;
 
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
@@ -13,11 +14,9 @@ import java.util.function.BooleanSupplier;
 public class AutonomousInputWaitAction extends TimedAction {
 	private final BooleanSupplier shouldWait;
 	private final BooleanSupplier shouldStart;
-	/**
-	 * @param lastMillis The amount of time in millis for this to last
-	 */
-	public AutonomousInputWaitAction(long lastMillis, BooleanSupplier shouldWait, BooleanSupplier shouldStart) {
-		super(true, lastMillis);
+
+	public AutonomousInputWaitAction(Clock clock, double lastSeconds, BooleanSupplier shouldWait, BooleanSupplier shouldStart) {
+		super(true, clock, lastSeconds);
 		this.shouldWait = Objects.requireNonNull(shouldWait);
 		this.shouldStart = Objects.requireNonNull(shouldStart);
 	}

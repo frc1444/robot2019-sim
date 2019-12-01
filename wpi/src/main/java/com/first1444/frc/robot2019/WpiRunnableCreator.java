@@ -11,7 +11,6 @@ import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.shuffleboard.ShuffleboardContainer;
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard;
 import com.first1444.frc.robot2019.input.InputUtil;
-import com.first1444.frc.robot2019.sensors.DefaultOrientation;
 import com.first1444.frc.robot2019.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
@@ -25,9 +24,9 @@ import com.first1444.sim.api.frc.BasicRobotRunnable;
 import com.first1444.sim.api.frc.FrcDriverStation;
 import com.first1444.sim.wpi.WpiClock;
 import com.first1444.sim.wpi.frc.WpiFrcDriverStation;
+import com.first1444.sim.wpi.sensors.WpiMutableOrientation;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
-import me.retrodaredevil.action.Actions;
 import me.retrodaredevil.controller.output.DualShockRumble;
 import me.retrodaredevil.controller.wpi.WpiInputCreator;
 
@@ -94,7 +93,7 @@ public class WpiRunnableCreator implements RunnableCreator {
 		Robot robot = new Robot(
 				driverStation, new WpiClock(), shuffleboardMap,
 				InputUtil.createPS4Controller(new WpiInputCreator(0)), new WpiInputCreator(1), new WpiInputCreator(2), new DualShockRumble(new WpiInputCreator(5).createRumble()),
-				new DefaultOrientation(gyro, true),
+				new WpiMutableOrientation(gyro, true),
 				data, lift, cargoIntake, hatchIntake, climber,
 				Collections::emptyList, // TODO vision
 				new CameraSystem(shuffleboardMap, () -> robotReference[0].getTaskSystem())

@@ -11,6 +11,8 @@ import com.first1444.dashboard.shuffleboard.implementations.DefaultShuffleboard
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard
 import com.first1444.frc.robot2019.DefaultShuffleboardMap
 import com.first1444.frc.robot2019.Robot
+import com.first1444.frc.robot2019.input.InputUtil
+import com.first1444.frc.robot2019.input.LinuxPS4StandardControllerInputCreator
 import com.first1444.frc.robot2019.subsystems.implementations.DummyCargoIntake
 import com.first1444.frc.robot2019.subsystems.implementations.DummyClimber
 import com.first1444.frc.robot2019.subsystems.implementations.DummyHatchIntake
@@ -21,6 +23,7 @@ import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData
 import com.first1444.sim.api.drivetrain.swerve.SwerveModule
 import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot
 import com.first1444.sim.api.frc.BasicRobotRunnable
+import com.first1444.sim.api.frc.sim.DriverStationSendable
 import com.first1444.sim.gdx.*
 import com.first1444.sim.gdx.drivetrain.swerve.BodySwerveModule
 import com.first1444.sim.gdx.entity.ActorBodyEntity
@@ -114,14 +117,28 @@ object MyRobotCreator : RobotCreator {
         )
         val provider = IndexedControllerProvider(0)
         val creator = GdxControllerPartCreator(provider, true)
-        val joystick = BaseStandardControllerInput(DefaultStandardControllerInputCreator(), creator, OptionValues.createImmutableBooleanOptionValue(true), OptionValues.createImmutableBooleanOptionValue(false))
-
-        val networkTable = NetworkTableInstance.getDefault()
-        networkTable.startServer()
-        val bundle = DefaultDashboardBundle(NetworkTableInstanceBasicDashboard(networkTable))
-        val shuffleboardMap = DefaultShuffleboardMap(bundle.shuffleboard)
-        val reportMap = DashboardReportMap(shuffleboardMap.debugTab.rawDashboard.getSubDashboard("Report Map"))
+//        val joystick = BaseStandardControllerInput(DefaultStandardControllerInputCreator(), creator, OptionValues.createImmutableBooleanOptionValue(true), OptionValues.createImmutableBooleanOptionValue(false))
+        val joystick = if("sony" in provider.name.toLowerCase()){
+            val osName = System.getProperty("os.name").toLowerCase()
+            if("nux" in osName || "nix" in osName || "aix" in osName || "mac" in osName) { // only Linux is tested, so feel free to change these if you need to add or remove one
+                println("*nix ps4")
+                InputUtil.createController(creator, LinuxPS4StandardControllerInputCreator())
+            } else {
+                println("regular ps4")
+                InputUtil.createPS4Controller(creator)
+            }
+        } else {
+            println("default controller")
+            // NOTE: I have "physicalLocationSwapped" set to true because I test with a Nintendo controller most of the time
+            BaseStandardControllerInput(DefaultStandardControllerInputCreator(), creator, OptionValues.createImmutableBooleanOptionValue(true), OptionValues.createImmutableBooleanOptionValue(false))
+        }
         val robotCreator = RunnableCreator.wrap {
+            val networkTable = NetworkTableInstance.getDefault()
+            networkTable.startServer()
+            val bundle = DefaultDashboardBundle(NetworkTableInstanceBasicDashboard(networkTable))
+            val driverStationActiveComponent = DriverStationSendable(data.driverStation).init("FMSInfo", bundle.rootDashboard.getSubDashboard("FMSInfo"))
+            val shuffleboardMap = DefaultShuffleboardMap(bundle.shuffleboard)
+            val reportMap = DashboardReportMap(shuffleboardMap.debugTab.rawDashboard.getSubDashboard("Report Map"))
             val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
                     data.driverStation, updateableData.clock,
                     shuffleboardMap,
@@ -134,15 +151,15 @@ object MyRobotCreator : RobotCreator {
             )), data.driverStation)
             RobotRunnableMultiplexer(
                     listOf(robotRunnable, object : RobotRunnable {
-                        override fun close() {
-                            bundle.onRemove()
-                            networkTable.stopServer()
-                        }
-
                         override fun run() {
                             bundle.update()
+                            driverStationActiveComponent.update()
                         }
-
+                        override fun close() {
+                            bundle.onRemove()
+                            driverStationActiveComponent.onRemove()
+                            networkTable.stopServer()
+                        }
                     })
             )
         }

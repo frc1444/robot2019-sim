@@ -7,6 +7,7 @@ import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.subsystems.Lift;
 import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
+import com.first1444.sim.api.Rotation2;
 import edu.wpi.first.wpilibj.DriverStation;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
@@ -45,18 +46,18 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	}
 	
 	@Override
-	public Action createTurnToOrientation(double desiredOrientation) {
-		return new TurnToOrientation(desiredOrientation, robot::getDrive, robot::getOrientation);
+	public Action createTurnToOrientation(Rotation2 desiredOrientation) {
+		return new TurnToOrientation(desiredOrientation, robot.getDrive(), robot.getOrientation());
 	}
 
 	@Override
-	public Action createGoStraight(double distanceMeters, double speed, double angleDegrees) {
-		return GoStraight.createGoStraightAtHeading(distanceMeters, speed, angleDegrees, null, robot::getDrive, robot::getOrientation);
+	public Action createGoStraight(double distanceMeters, double speed, Rotation2 angle) {
+		return GoStraight.createGoStraightAtHeading(distanceMeters, speed, angle, null, robot.getDrive(), robot.getOrientation());
 	}
 
 	@Override
-	public Action createGoStraight(double distanceMeters, double speed, double angleDegrees, double faceDirectionDegrees) {
-		return GoStraight.createGoStraightAtHeading(distanceMeters, speed, angleDegrees, faceDirectionDegrees, robot::getDrive, robot::getOrientation);
+	public Action createGoStraight(double distanceMeters, double speed, Rotation2 angle, Rotation2 faceDirection) {
+		return GoStraight.createGoStraightAtHeading(distanceMeters, speed, angle, faceDirection, robot.getDrive(), robot.getOrientation());
 	}
 
 	@Override
@@ -149,17 +150,17 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	
 	@Override
 	public Action createDropHatch() {
-		return HatchIntakeAction.createDrop(robot::getHatchIntake);
+		return HatchIntakeAction.createDrop(robot.getClock(), robot.getHatchIntake());
 	}
 	
 	@Override
 	public Action createGrabHatch() {
-		return HatchIntakeAction.createGrab(robot::getHatchIntake);
+		return HatchIntakeAction.createGrab(robot.getClock(), robot.getHatchIntake());
 	}
 	
 	@Override
 	public Action createReleaseCargo() {
-		return new TimedCargoIntake(500, robot::getCargoIntake, 1);
+		return new TimedCargoIntake(robot.getClock(), .5, robot.getCargoIntake(), 1);
 	}
 	
 	@Override

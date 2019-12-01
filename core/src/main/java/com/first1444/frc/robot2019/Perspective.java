@@ -1,34 +1,39 @@
 package com.first1444.frc.robot2019;
 
+import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.sensors.Orientation;
 
 import static com.first1444.sim.api.MathUtil.mod;
 import static java.lang.Math.toRadians;
 
 public enum Perspective {
-	ROBOT_FORWARD_CAM(0, false),
-	ROBOT_RIGHT_CAM(-90, false),
-	ROBOT_LEFT_CAM(90, false),
-	ROBOT_BACK_CAM(-180, false),
+	ROBOT_FORWARD_CAM(Rotation2.ZERO, false),
+	ROBOT_RIGHT_CAM(Rotation2.fromDegrees(-90), false),
+	ROBOT_LEFT_CAM(Rotation2.DEG_90, false),
+	ROBOT_BACK_CAM(Rotation2.DEG_180, false),
 	
-	DRIVER_STATION(0, true),
+	DRIVER_STATION(Rotation2.ZERO, true),
 	/** When the jumbotron is on the right side of our driver station*/
-	JUMBOTRON_ON_RIGHT(-90, true),
+	JUMBOTRON_ON_RIGHT(Rotation2.fromDegrees(-90), true),
 	/** When the jumbotron is on the left side of our driver station*/
-	JUMBOTRON_ON_LEFT(90, true);
+	JUMBOTRON_ON_LEFT(Rotation2.DEG_90, true);
 
-	private final double offsetDegrees;
+	private final Rotation2 offset;
 	private final boolean useGyro;
 
-	Perspective(double offsetDegrees, boolean useGyro) {
-		this.offsetDegrees = offsetDegrees;
+	Perspective(Rotation2 offset, boolean useGyro) {
+	    this.offset = offset;
 		this.useGyro = useGyro;
 	}
 	public double getOffsetDegrees(){
-		return offsetDegrees;
+		return offset.getDegrees();
 	}
 	public double getOffsetRadians(){
-		return toRadians(offsetDegrees);
+		return offset.getRadians();
+	}
+
+	public Rotation2 getOffset(){
+		return offset;
 	}
 
 	/**

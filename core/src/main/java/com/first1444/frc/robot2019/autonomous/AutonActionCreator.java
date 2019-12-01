@@ -2,6 +2,7 @@ package com.first1444.frc.robot2019.autonomous;
 
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.subsystems.Lift;
+import com.first1444.sim.api.Rotation2;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.LinkedAction;
 import me.retrodaredevil.action.WhenDone;
@@ -20,10 +21,10 @@ public interface AutonActionCreator {
 	Action createLogWarningAction(String message);
 	Action createLogErrorAction(String message);
 	
-	Action createTurnToOrientation(double desiredOrientation);
+	Action createTurnToOrientation(Rotation2 desiredOrientation);
 	@Deprecated
-	Action createGoStraight(double distanceMeters, double speed, double angleDegrees);
-	Action createGoStraight(double distanceMeters, double speed, double angleDegrees, double faceDirectionDegrees);
+	Action createGoStraight(double distanceMeters, double speed, Rotation2 angle);
+	Action createGoStraight(double distanceMeters, double speed, Rotation2 angle, Rotation2 faceDirection);
 
 	Action createCargoShipPlaceHatchUseVision(Action failAction, Action successAction);
 	Action createCargoShipPlaceCargoUseVision(Action failAction, Action successAction);

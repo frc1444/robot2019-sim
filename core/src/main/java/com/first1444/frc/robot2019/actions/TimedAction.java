@@ -1,33 +1,40 @@
 package com.first1444.frc.robot2019.actions;
 
+import com.first1444.sim.api.Clock;
 import me.retrodaredevil.action.SimpleAction;
+
+import static java.util.Objects.requireNonNull;
 
 public class TimedAction extends SimpleAction {
 
-	private final long lastMillis;
+	private final Clock clock;
+	private final double lastSeconds;
 
-	private long startMillis;
+	private Double startSeconds = null;
 
 	/**
 	 *
+	 * @param clock The clock
 	 * @param canRecycle Can this action be recycled
-	 * @param lastMillis The amount of time in millis for this to last
+	 * @param lastSeconds The amount of time in millis for this to last
 	 */
-	public TimedAction(boolean canRecycle, long lastMillis) {
+	public TimedAction(boolean canRecycle, Clock clock, double lastSeconds) {
 		super(canRecycle);
-		this.lastMillis = lastMillis;
+		this.clock = requireNonNull(clock);
+		this.lastSeconds = lastSeconds;
 	}
-	protected long getTimeMillis(){
-		return System.currentTimeMillis();
-	}
-	protected final long getTimeLeft(){
-		return (lastMillis + startMillis) - getTimeMillis();
+	protected final double getTimeLeft(){
+		Double startSeconds = this.startSeconds;
+		if(startSeconds == null){
+			throw new IllegalStateException("Cannot get the time left if this hasn't started yet!");
+		}
+		return (lastSeconds + startSeconds) - clock.getTimeSeconds();
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
-		startMillis = getTimeMillis();
+		startSeconds = clock.getTimeSeconds();
 	}
 
 	@Override
@@ -36,4 +43,9 @@ public class TimedAction extends SimpleAction {
 		setDone(getTimeLeft() <= 0);
 	}
 
+	@Override
+	protected void onEnd(boolean peacefullyEnded) {
+		super.onEnd(peacefullyEnded);
+		this.startSeconds = null;
+	}
 }

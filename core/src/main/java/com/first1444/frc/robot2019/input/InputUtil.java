@@ -13,13 +13,15 @@ import me.retrodaredevil.controller.types.StandardControllerInput;
 public final class InputUtil {
 	private InputUtil(){ throw new UnsupportedOperationException(); }
 
-
 	public static StandardControllerInput createPS4Controller(ControllerPartCreator controller){
-		StandardControllerInputCreator ps4Mappings = new PS4StandardControllerInputCreator();
-		Boolean physicalLocationSwapped = ps4Mappings.getPhysicalLocationsSwapped();
-		Boolean buttonNamesSwapped = ps4Mappings.getButtonNamesSwapped();
+		return createController(controller, new PS4StandardControllerInputCreator());
+	}
+
+	public static StandardControllerInput createController(ControllerPartCreator controller, StandardControllerInputCreator creator){
+		Boolean physicalLocationSwapped = creator.getPhysicalLocationsSwapped();
+		Boolean buttonNamesSwapped = creator.getButtonNamesSwapped();
 		return new BaseStandardControllerInput(
-				ps4Mappings,
+				creator,
 				controller,
 				OptionValues.createImmutableBooleanOptionValue(physicalLocationSwapped == null ? false : physicalLocationSwapped),
 				OptionValues.createImmutableBooleanOptionValue(buttonNamesSwapped == null ? false : buttonNamesSwapped)

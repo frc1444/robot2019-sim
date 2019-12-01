@@ -1,7 +1,8 @@
 package com.first1444.frc.robot2019.vision;
 
 import com.first1444.sim.api.Clock;
-import com.first1444.sim.api.Transform;
+import com.first1444.sim.api.Rotation2;
+import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.surroundings.Surrounding;
 import com.first1444.sim.api.surroundings.Surrounding3DExtra;
 import com.first1444.sim.api.surroundings.SurroundingProvider;
@@ -17,13 +18,13 @@ public class VisionPacketListener extends Thread implements SurroundingProvider 
 			.create();
 
 	private final Clock clock;
-	private final Map<Integer, Double> cameraOffsetDegreesMap;
+	private final Map<Integer, Rotation2> cameraOffsetMap;
 	private final String ip;
 	private final int port;
 	private List<Surrounding> surroundingList = null;
-	public VisionPacketListener(Clock clock, Map<Integer, Double> cameraOffsetDegreesMap, String ip, int port){
+	public VisionPacketListener(Clock clock, Map<Integer, Rotation2> cameraOffsetMap, String ip, int port){
 		this.clock = clock;
-		this.cameraOffsetDegreesMap = cameraOffsetDegreesMap;
+		this.cameraOffsetMap = cameraOffsetMap;
 		this.ip = ip;
 		this.port = port;
 		setDaemon(true);
@@ -77,20 +78,20 @@ public class VisionPacketListener extends Thread implements SurroundingProvider 
 			
 			final JsonArray packetArray = instantObject.get("packets").getAsJsonArray();
 			final int cameraID = instantObject.get("cameraId").getAsInt();
-			final double offsetDegrees = cameraOffsetDegreesMap.get(cameraID);
+			final Rotation2 offset = cameraOffsetMap.get(cameraID);
 			for (final JsonElement packetElement : packetArray) {
 				final JsonObject packetObject = packetElement.getAsJsonObject();
-				final Transform correctTransform = Transform.transformRadians(
+				final Transform2 correctTransform = new Transform2(
 						packetObject.get("x").getAsDouble() / 1000,
 						packetObject.get("z").getAsDouble() / 1000,
-						0.0
+						Rotation2.ZERO
 				).getReversed();
 				final Surrounding surrounding = new Surrounding(
-						Transform.transformDegrees(
+						Transform2.fromDegrees(
 								correctTransform.getX(),
 								correctTransform.getY(),
 								packetObject.get("yaw").getAsDouble()
-						).rotateDegrees(offsetDegrees),
+						).rotate(offset),
 						timestamp,
 						Surrounding3DExtra.fromDegrees(
 								packetObject.get("y").getAsDouble() / 1000,

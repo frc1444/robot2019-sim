@@ -4,7 +4,7 @@ import com.first1444.frc.robot2019.autonomous.actions.DistanceAwayLinkedAction;
 import com.first1444.frc.robot2019.event.EventSender;
 import com.first1444.frc.robot2019.event.SoundEvents;
 import com.first1444.sim.api.Clock;
-import com.first1444.sim.api.Transform;
+import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.drivetrain.StrafeDrive;
 import com.first1444.sim.api.selections.Selector;
@@ -16,7 +16,6 @@ import me.retrodaredevil.action.SimpleAction;
 
 import static com.first1444.sim.api.MathUtil.minChange;
 import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
-import static com.first1444.sim.api.Transform.transformRadians;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -108,15 +107,15 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 		}
 	}
 	private void useSurrounding(Surrounding surrounding){
-		Transform vision = surrounding.getTransform();
-		vision = transformRadians(vision.getPosition().getNormalized().times(vision.getPosition().getMagnitude() - targetDistanceBack), vision.getRotationRadians());
+		Transform2 vision = surrounding.getTransform();
+		vision = Transform2.fromRadians(vision.getPosition().getNormalized().times(vision.getPosition().getMagnitude() - targetDistanceBack), vision.getRotationRadians());
 		double yawDegrees = vision.getRotationDegrees() - desiredSurroundingRotationDegrees;
 		yawDegrees = minChange(yawDegrees, 0, 360);
 		double yawTurnAmount = max(-1, min(1, yawDegrees / -30));
 
-		Transform reversed = vision.getReversed();
+		Transform2 reversed = vision.getReversed();
 //		Vector2 translate = vision.getPosition().getNormalized();
-        Vector2 translate = transformRadians(reversed.getPosition().times(1, 3), reversed.getRotationRadians())
+        Vector2 translate = new Transform2(reversed.getPosition().times(1, 3), reversed.getRotation())
 				.getReversed().getPosition();
 
         if(translate.getMagnitude() > .1){

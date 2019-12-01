@@ -2,11 +2,13 @@ package com.first1444.frc.robot2019.gdx
 
 import com.badlogic.gdx.ApplicationListener
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.controllers.Controllers
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.first1444.sim.gdx.init.*
 import edu.wpi.first.networktables.NetworkTableInstance
 
 private fun createSelectionCreator(uiSkin: Skin, changer: ScreenChanger): ScreenCreator {
+    Controllers.getControllers() // we want to initialize this as soon as possible even if we won't use it yet
     val creator = MyRobotCreator
     val exitButtonUpdateableCreator = ExitButtonCreator(Runnable {
         changer.change(createSelectionCreator(uiSkin, changer).create(changer))
