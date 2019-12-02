@@ -1,4 +1,4 @@
-package com.first1444.frc.robot2019.autonomous;
+package com.first1444.frc.robot2019.autonomous.original;
 
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.subsystems.Lift;
@@ -15,7 +15,7 @@ import me.retrodaredevil.action.WhenDone;
  * NOTE: For each failAction and successAction, they are allowed to be null and if they're an instanceof {@link LinkedAction},
  * they will be ran like a {@link LinkedAction}
  */
-public interface AutonActionCreator {
+public interface OriginalAutonActionCreator {
 	
 	Action createLogMessageAction(String message);
 	Action createLogWarningAction(String message);

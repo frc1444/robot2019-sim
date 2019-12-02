@@ -1,14 +1,12 @@
-package com.first1444.frc.robot2019.autonomous;
+package com.first1444.frc.robot2019.autonomous.original;
 
-import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.autonomous.actions.*;
 import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
+import com.first1444.frc.robot2019.autonomous.original.actions.GoStraight;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.subsystems.Lift;
-import com.first1444.frc.robot2019.vision.BestVisionPacketSelector;
 import com.first1444.sim.api.Rotation2;
-import edu.wpi.first.wpilibj.DriverStation;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
 import me.retrodaredevil.action.SimpleAction;
@@ -18,15 +16,16 @@ import java.util.Map;
 
 import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
 
-public class RobotAutonActionCreator implements AutonActionCreator {
+public class RobotOriginalAutonActionCreator implements OriginalAutonActionCreator {
+	/** NOTE: This map does not contain {@link Lift.Position#CARGO_CARGO_SHIP} */
 	private static final Map<SlotLevel, Lift.Position> SLOT_MAP = Map.of(
-			SlotLevel.LEVEL1, Lift.Position.LEVEL1,
+			SlotLevel.LEVEL1, Lift.Position.LEVEL1, // although SlotLevel.LEVEL1 may refer to the CARGO_CARGO_SHIP height, when we use this map, it is not for that
 			SlotLevel.LEVEL2, Lift.Position.LEVEL2,
 			SlotLevel.LEVEL3, Lift.Position.LEVEL3
 	);
 	private final Robot robot;
 
-	public RobotAutonActionCreator(Robot robot) {
+	public RobotOriginalAutonActionCreator(Robot robot) {
 		this.robot = robot;
 	}
 	
@@ -37,12 +36,12 @@ public class RobotAutonActionCreator implements AutonActionCreator {
 	
 	@Override
 	public Action createLogWarningAction(String message) {
-		return Actions.createRunOnce(() -> DriverStation.reportWarning(message, false));
+		return Actions.createRunOnce(() -> robot.getLogger().reportWarning(message, false));
 	}
 	
 	@Override
 	public Action createLogErrorAction(String message) {
-		return Actions.createRunOnce(() -> DriverStation.reportError(message, false));
+		return Actions.createRunOnce(() -> robot.getLogger().reportError(message, false));
 	}
 	
 	@Override

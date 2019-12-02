@@ -42,19 +42,19 @@ public class MutableValueMapSendable<T extends Enum<T> & ValueKey> implements Se
 				case DOUBLE:
 				    components.add(new PropertyActiveComponent(name, basicDashboard.get(name), ValueProperty.create(
 				    		() -> BasicValue.makeDouble(valueMap.getDouble(key)),
-							(value) -> { valueMap.setDouble(key, ((Number)value.getValue()).doubleValue()); return null; }
+							(value) -> valueMap.setDouble(key, ((Number)value.getValue()).doubleValue())
 					)));
 					break;
 				case STRING:
 					components.add(new PropertyActiveComponent(name, basicDashboard.get(name), ValueProperty.create(
 							() -> BasicValue.makeString(valueMap.getString(key)),
-							(value) -> { valueMap.setString(key, ((String)value.getValue())); return null; }
+							(value) -> valueMap.setString(key, ((String)value.getValue()))
 					)));
 					break;
 				case BOOLEAN:
 					components.add(new PropertyActiveComponent(name, basicDashboard.get(name), ValueProperty.create(
 							() -> BasicValue.makeBoolean(valueMap.getBoolean(key)),
-							(value) -> { valueMap.setBoolean(key, ((Boolean)value.getValue())); return null; }
+							(value) -> valueMap.setBoolean(key, ((Boolean)value.getValue()))
 					)));
 					break;
 				default:

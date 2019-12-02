@@ -1,4 +1,4 @@
-package com.first1444.frc.robot2019.autonomous;
+package com.first1444.frc.robot2019.autonomous.original;
 
 import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
@@ -10,13 +10,13 @@ import me.retrodaredevil.action.WhenDone;
 
 import java.io.PrintStream;
 
-public class TestAutonActionCreator implements AutonActionCreator {
+public class TestOriginalAutonActionCreator implements OriginalAutonActionCreator {
 	private final PrintStream out;
 	
-	public TestAutonActionCreator(PrintStream out) {
+	public TestOriginalAutonActionCreator(PrintStream out) {
 		this.out = out;
 	}
-	public TestAutonActionCreator(){
+	public TestOriginalAutonActionCreator(){
 		this(System.out);
 	}
 	

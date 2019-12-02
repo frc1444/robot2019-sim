@@ -16,8 +16,8 @@ import com.first1444.frc.robot2019.actions.OperatorAction;
 import com.first1444.frc.robot2019.actions.SwerveCalibrateAction;
 import com.first1444.frc.robot2019.actions.SwerveDriveAction;
 import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
-import com.first1444.frc.robot2019.autonomous.AutonomousModeCreator;
-import com.first1444.frc.robot2019.autonomous.RobotAutonActionCreator;
+import com.first1444.frc.robot2019.autonomous.original.OriginalAutonomousModeCreator;
+import com.first1444.frc.robot2019.autonomous.original.RobotOriginalAutonActionCreator;
 import com.first1444.frc.robot2019.autonomous.actions.TimedCargoIntake;
 import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
 import com.first1444.frc.robot2019.event.EventSender;
@@ -34,9 +34,9 @@ import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
-import com.first1444.sim.api.frc.AdvancedIterativeRobot;
 import com.first1444.sim.api.frc.AdvancedIterativeRobotAdapter;
 import com.first1444.sim.api.frc.FrcDriverStation;
+import com.first1444.sim.api.frc.FrcLogger;
 import com.first1444.sim.api.frc.FrcMode;
 import com.first1444.sim.api.scheduler.match.DefaultMatchScheduler;
 import com.first1444.sim.api.scheduler.match.MatchScheduler;
@@ -65,6 +65,7 @@ import java.util.Map;
 public class Robot extends AdvancedIterativeRobotAdapter {
 
 	private final FrcDriverStation driverStation;
+	private final FrcLogger logger;
 	private final Clock clock;
 	private final Lift lift;
 	private final CargoIntake cargoIntake;
@@ -111,6 +112,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 	/** Used to initialize final fields.*/
 	public Robot(
 			FrcDriverStation driverStation,
+			FrcLogger logger,
 			Clock clock,
 			ShuffleboardMap shuffleboardMap,
 			StandardControllerInput controller, ControllerPartCreator port1, ControllerPartCreator port2, ControllerRumble rumble,
@@ -121,6 +123,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 			Action extraAction
 	){
 	    this.driverStation = driverStation;
+	    this.logger = logger;
 	    this.clock = clock;
 		this.cargoIntake = cargoIntake;
 		this.climber = climber;
@@ -206,7 +209,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 		autonomousChooserState = new AutonomousChooserState(
 				shuffleboardMap,  // this will add stuff to the dashboard
 				clock,
-				new AutonomousModeCreator(new RobotAutonActionCreator(this), dimensions),
+				new OriginalAutonomousModeCreator(new RobotOriginalAutonActionCreator(this), dimensions),
 				robotInput
 		);
 
@@ -330,6 +333,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 	// endregion
 
 	public Clock getClock() { return clock; }
+	public FrcLogger getLogger(){ return logger; }
 	
 	public SwerveDrive getDrive(){ return drive; }
 	public Orientation getOrientation(){

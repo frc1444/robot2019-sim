@@ -1,4 +1,4 @@
-package com.first1444.frc.robot2019.autonomous.actions;
+package com.first1444.frc.robot2019.autonomous.original.actions;
 
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveDistanceTracker;
 import com.first1444.sim.api.MathUtil;
@@ -8,8 +8,6 @@ import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
 import com.first1444.sim.api.sensors.Orientation;
 import me.retrodaredevil.action.SimpleAction;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.function.Supplier;
 
 import static java.lang.Math.*;
 
@@ -55,7 +53,6 @@ public class GoStraight extends SimpleAction {
 
 		final SwerveDrive drive = tracker.getDrive();
 		final double minChange;
-//		final double currentOrientation = orientation.getOrientationDegrees();
 		final Rotation2 currentOrientation = orientation.getOrientation();
 		if(faceDirection != null) {
 			minChange = MathUtil.minChange(faceDirection.getDegrees(), currentOrientation.getDegrees(), 360);

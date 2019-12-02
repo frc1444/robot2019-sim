@@ -41,7 +41,8 @@ wpi {
 }
 dependencies {
     implementation "com.github.frc1444.robo-sim:wpi:$roboSimVersion"
-    api "com.github.frc1444.abstract-dashboard:wpi:$abstractDashboardVersion"
+    implementation "com.github.retrodaredevil.abstract-controller-lib:wpi:$abstractControllerLibVersion"
+    implementation "com.github.frc1444.abstract-dashboard:wpi:$abstractDashboardVersion"
     implementation wpi.deps.wpilib()
     implementation wpi.deps.vendor.java()
     nativeZip wpi.deps.vendor.jni(wpi.platforms.roborio)

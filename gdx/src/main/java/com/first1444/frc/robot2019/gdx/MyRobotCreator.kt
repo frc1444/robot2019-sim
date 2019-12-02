@@ -24,6 +24,7 @@ import com.first1444.sim.api.drivetrain.swerve.SwerveModule
 import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot
 import com.first1444.sim.api.frc.BasicRobotRunnable
 import com.first1444.sim.api.frc.sim.DriverStationSendable
+import com.first1444.sim.api.frc.sim.PrintStreamFrcLogger
 import com.first1444.sim.gdx.*
 import com.first1444.sim.gdx.drivetrain.swerve.BodySwerveModule
 import com.first1444.sim.gdx.entity.ActorBodyEntity
@@ -140,7 +141,7 @@ object MyRobotCreator : RobotCreator {
             val shuffleboardMap = DefaultShuffleboardMap(bundle.shuffleboard)
             val reportMap = DashboardReportMap(shuffleboardMap.debugTab.rawDashboard.getSubDashboard("Report Map"))
             val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
-                    data.driverStation, updateableData.clock,
+                    data.driverStation, PrintStreamFrcLogger(System.err, System.err), updateableData.clock,
                     shuffleboardMap,
                     joystick, GdxControllerPartCreator(IndexedControllerProvider(1)), GdxControllerPartCreator(IndexedControllerProvider(2)), DisconnectedRumble.getInstance(),
                     EntityOrientation(entity),

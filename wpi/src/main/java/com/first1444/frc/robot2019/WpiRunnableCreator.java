@@ -23,6 +23,7 @@ import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot;
 import com.first1444.sim.api.frc.BasicRobotRunnable;
 import com.first1444.sim.api.frc.FrcDriverStation;
 import com.first1444.sim.wpi.WpiClock;
+import com.first1444.sim.wpi.frc.DriverStationLogger;
 import com.first1444.sim.wpi.frc.WpiFrcDriverStation;
 import com.first1444.sim.wpi.sensors.WpiMutableOrientation;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -91,7 +92,7 @@ public class WpiRunnableCreator implements RunnableCreator {
 
 		final Robot[] robotReference = {null};
 		Robot robot = new Robot(
-				driverStation, new WpiClock(), shuffleboardMap,
+				driverStation, DriverStationLogger.INSTANCE, new WpiClock(), shuffleboardMap,
 				InputUtil.createPS4Controller(new WpiInputCreator(0)), new WpiInputCreator(1), new WpiInputCreator(2), new DualShockRumble(new WpiInputCreator(5).createRumble()),
 				new WpiMutableOrientation(gyro, true),
 				data, lift, cargoIntake, hatchIntake, climber,

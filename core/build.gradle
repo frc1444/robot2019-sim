@@ -2,10 +2,9 @@ apply plugin: "java"
 sourceCompatibility = '1.11'
 targetCompatibility = '1.11'
 dependencies {
-    api "com.github.frc1444:robo-sim:$roboSimVersion"
     api "com.github.frc1444.robo-sim:api:$roboSimVersion"
 
-    api 'com.github.retrodaredevil:abstract-controller-lib:v2.2.5'
+    api "com.github.retrodaredevil.abstract-controller-lib:api:$abstractControllerLibVersion"
     api 'com.github.retrodaredevil:action-lib:v1.1.6'
 
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
