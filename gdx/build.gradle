@@ -13,13 +13,15 @@ dependencies {
     api "edu.wpi.first.ntcore:ntcore-java:$wpiLibVersion"
     api "edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion"
     api "edu.wpi.first.ntcore:ntcore-jni:$wpiLibVersion:linuxx86-64"
-    /*
-    // keep this comment here in case of an emergency where we need to quickly change code
-    api "edu.wpi.first.wpilibj:wpilibj-java:$wpiLibVersion"
     api "edu.wpi.first.wpiutil:wpiutil-java:$wpiLibVersion"
-    api "edu.wpi.first.cscore:cscore-java:$wpiLibVersion"
+
     api "edu.wpi.first.hal:hal-java:$wpiLibVersion"
     api "edu.wpi.first.hal:hal-jni:$wpiLibVersion"
     api "edu.wpi.first.hal:hal-jni:$wpiLibVersion:linuxx86-64"
+
+    /*
+    // keep this comment here in case of an emergency where we need to quickly change code
+    api "edu.wpi.first.wpilibj:wpilibj-java:$wpiLibVersion"
+    api "edu.wpi.first.cscore:cscore-java:$wpiLibVersion"
      */
 }

@@ -26,11 +26,14 @@ import com.first1444.frc.robot2019.event.TCPEventSender;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
+import com.first1444.frc.robot2019.sound.DefaultSoundMap;
+import com.first1444.frc.robot2019.sound.SoundMap;
 import com.first1444.frc.robot2019.subsystems.*;
 import com.first1444.frc.robot2019.subsystems.implementations.DefaultTaskSystem;
 import com.first1444.frc.robot2019.vision.VisionPacketListener;
 import com.first1444.frc.util.OrientationSendableHelper;
 import com.first1444.sim.api.Clock;
+import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
@@ -42,6 +45,7 @@ import com.first1444.sim.api.scheduler.match.DefaultMatchScheduler;
 import com.first1444.sim.api.scheduler.match.MatchScheduler;
 import com.first1444.sim.api.scheduler.match.MatchTime;
 import com.first1444.sim.api.sensors.Orientation;
+import com.first1444.sim.api.sound.SoundCreator;
 import com.first1444.sim.api.surroundings.SurroundingProvider;
 import me.retrodaredevil.action.*;
 import me.retrodaredevil.controller.ControlConfig;
@@ -94,7 +98,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 	private final MatchScheduler matchScheduler;
 	
 	private final VisionPacketListener visionPacketListener;
-	private final TCPEventSender soundSender;
+	private final SoundMap soundMap;
 
 	/** An {@link Action} that updates certain subsystems only when the robot is enabled*/
 	private final ActionMultiplexer enabledSubsystemUpdater;
@@ -116,6 +120,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 			Clock clock,
 			ShuffleboardMap shuffleboardMap,
 			StandardControllerInput controller, ControllerPartCreator port1, ControllerPartCreator port2, ControllerRumble rumble,
+			SoundCreator soundCreator,
 			Orientation rawOrientation,
 			FourWheelSwerveDriveData fourWheelSwerveData,
 			Lift lift, CargoIntake cargoIntake, HatchIntake hatchIntake, Climber climber,
@@ -139,6 +144,8 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 		);
 		partUpdater.addPartAssertNotPresent(robotInput);
 		partUpdater.updateParts(controlConfig); // update this so when calling get methods don't throw exceptions
+
+		soundMap = new DefaultSoundMap(soundCreator);
 
 		orientationSystem = new OrientationSystem(shuffleboardMap, rawOrientation, robotInput);
 		OrientationSendableHelper.addOrientation(shuffleboardMap.getUserTab(), getOrientation());
@@ -184,8 +191,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 				),
 				"10.14.44.5", 5801
 		);
-		soundSender = new TCPEventSender(5809);
-		
+
 		enabledSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
 				lift, cargoIntake, climber, hatchIntake
 		).clearAllOnEnd(false).canRecycle(true).build();
@@ -219,7 +225,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
 	@Override
 	public void close() {
-		soundSender.close();
 		visionPacketListener.interrupt();
 		System.out.println("close() method called! Robot program must be ending!");
 	}
@@ -250,9 +255,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 			enabledSubsystemUpdater.end();
 		}
 		if(previousMode == FrcMode.TELEOP){
-			soundSender.sendEvent(SoundEvents.MATCH_END);
+		    soundMap.getMatchEnd().play();
 		} else {
-			soundSender.sendEvent(SoundEvents.DISABLE);
+			soundMap.getDisable().play();
 		}
 	}
 
@@ -263,13 +268,13 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 				teleopAction
 		).canRecycle(false).canBeDone(true).build());
 		swerveDriveAction.setPerspective(Perspective.DRIVER_STATION);
-		soundSender.sendEvent(SoundEvents.TELEOP_ENABLE);
+		soundMap.getTeleopEnable().play();
 		matchScheduler.schedule(new MatchTime(1.2, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END), () -> {
 			System.out.println("Stowing cargo intake"); // good
 			cargoIntake.stow();
 		});
 		matchScheduler.schedule(new MatchTime(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END), () -> {
-			new TimedCargoIntake(clock, .4, cargoIntake, 1); // TODO add this to something // I don't remember why I wrote this comment or what something is... 2019.11.29
+			new TimedCargoIntake(clock, .4, cargoIntake, 1);
 		}); // good
 		matchScheduler.schedule(new MatchTime(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END), () -> {
 			System.out.println("Dropping hatch"); // good
@@ -301,7 +306,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 			taskSystem.setCurrentTask(TaskSystem.Task.CARGO);
 		}
 		swerveDriveAction.setPerspective(autoPerspective);
-		soundSender.sendEvent(SoundEvents.AUTONOMOUS_ENABLE);
+		soundMap.getAutonomousEnable().play();
 	}
 	/** Called constantly during autonomous*/
 	@Override
@@ -324,8 +329,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 				        clock,
 						surroundingProvider,
 						drive, getOrientation(),
+						Rotation2.ZERO,
 						Actions.createRunOnce(() -> System.out.println("Failed!")), Actions.createRunOnce(() -> System.out.println("Success!")),
-						getSoundSender()
+						soundMap
 				),
 				Actions.createRunOnce(() -> robotInput.getDriverRumble().rumbleTime(500, .2))
 		).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build());
@@ -344,11 +350,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 	public RobotDimensions getDimensions() {
 		return dimensions;
 	}
-	
-	public EventSender getSoundSender(){
-		return soundSender;
-	}
-	
+
+	public SoundMap getSoundMap(){ return soundMap; }
+
 	public Lift getLift(){ return lift; }
 	public CargoIntake getCargoIntake(){ return cargoIntake; }
 	public HatchIntake getHatchIntake(){ return hatchIntake; }

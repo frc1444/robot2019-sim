@@ -4,6 +4,7 @@ import com.first1444.frc.robot2019.Perspective;
 import com.first1444.frc.robot2019.RobotDimensions;
 import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
 import com.first1444.frc.robot2019.input.RobotInput;
+import com.first1444.frc.robot2019.sound.SilentSoundMap;
 import com.first1444.frc.robot2019.subsystems.TaskSystem;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Vector2;
@@ -92,7 +93,11 @@ public class SwerveDriveAction extends SimpleAction {
 			if(input.getVisionAlign().isJustPressed()){
 				actionChooser.setNextAction(LineUpCreator.createLineUpAction(
 				        clock, surroundingProvider,
-						drive, orientation,  null, null, null
+						drive, orientation,
+						task == TaskSystem.Task.HATCH
+								? dimensions.getHatchManipulatorPerspective().getOffset()
+								: dimensions.getCargoManipulatorPerspective().getOffset(),
+						null, null, SilentSoundMap.INSTANCE
 				));
 			}
 			actionChooser.update();

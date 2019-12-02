@@ -3,8 +3,9 @@ package com.first1444.frc.robot2019.autonomous.actions;
 import com.first1444.frc.robot2019.actions.TimedAction;
 import com.first1444.sim.api.Clock;
 
-import java.util.Objects;
 import java.util.function.BooleanSupplier;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * A {@link TimedAction} designed for autonomous that allows you to specify a time to wait while you are able to
@@ -17,10 +18,10 @@ public class AutonomousInputWaitAction extends TimedAction {
 
 	public AutonomousInputWaitAction(Clock clock, double lastSeconds, BooleanSupplier shouldWait, BooleanSupplier shouldStart) {
 		super(true, clock, lastSeconds);
-		this.shouldWait = Objects.requireNonNull(shouldWait);
-		this.shouldStart = Objects.requireNonNull(shouldStart);
+		this.shouldWait = requireNonNull(shouldWait);
+		this.shouldStart = requireNonNull(shouldStart);
 	}
-	
+
 	@Override
 	protected void onIsDoneRequest() {
 		super.onIsDoneRequest();

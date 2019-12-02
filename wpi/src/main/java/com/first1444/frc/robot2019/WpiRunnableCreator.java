@@ -22,6 +22,7 @@ import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot;
 import com.first1444.sim.api.frc.BasicRobotRunnable;
 import com.first1444.sim.api.frc.FrcDriverStation;
+import com.first1444.sim.api.sound.implementations.DummySoundCreator;
 import com.first1444.sim.wpi.WpiClock;
 import com.first1444.sim.wpi.frc.DriverStationLogger;
 import com.first1444.sim.wpi.frc.WpiFrcDriverStation;
@@ -94,6 +95,7 @@ public class WpiRunnableCreator implements RunnableCreator {
 		Robot robot = new Robot(
 				driverStation, DriverStationLogger.INSTANCE, new WpiClock(), shuffleboardMap,
 				InputUtil.createPS4Controller(new WpiInputCreator(0)), new WpiInputCreator(1), new WpiInputCreator(2), new DualShockRumble(new WpiInputCreator(5).createRumble()),
+				DummySoundCreator.INSTANCE, // TODO sounds
 				new WpiMutableOrientation(gyro, true),
 				data, lift, cargoIntake, hatchIntake, climber,
 				Collections::emptyList, // TODO vision

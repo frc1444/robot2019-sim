@@ -3,7 +3,9 @@ package com.first1444.frc.robot2019.autonomous.actions.vision;
 import com.first1444.frc.robot2019.autonomous.actions.DistanceAwayLinkedAction;
 import com.first1444.frc.robot2019.event.EventSender;
 import com.first1444.frc.robot2019.event.SoundEvents;
+import com.first1444.frc.robot2019.sound.SoundMap;
 import com.first1444.sim.api.Clock;
+import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.drivetrain.StrafeDrive;
@@ -29,11 +31,11 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 	private final Selector<Surrounding> surroundingSelector;
 	private final StrafeDrive drive;
 	private final Orientation orientation; // We won't need this until we start estimating after we lose a target
-    private final double desiredSurroundingRotationDegrees;
+    private final Rotation2 desiredSurroundingRotation;
     private final double targetDistanceBack;
 	
 	private final Action successAction;
-	private final EventSender eventSender;
+	private final SoundMap soundMap;
 
 
 	/** Used for sending sounds. Set to true once we found it. Set to false when we lose it.*/
@@ -41,8 +43,7 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 	private Action nextAction;
 	private Double failureStartTime = null;
 	private Double lastFailSound = null;
-	private Double successStart = null;
-	
+
 	private double distanceAway = Double.MAX_VALUE;
 	
 	StrafeLineUpAction(
@@ -50,9 +51,9 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 			SurroundingProvider surroundingProvider,
 			Selector<Surrounding> surroundingSelector,
 			StrafeDrive drive, Orientation orientation,
-			double desiredSurroundingRotationDegrees,
+			Rotation2 desiredSurroundingRotation,
 			double targetDistanceBack,
-			Action failAction, Action successAction, EventSender eventSender
+			Action failAction, Action successAction, SoundMap soundMap
 	) {
 		super(false);
 		this.clock = clock;
@@ -60,12 +61,12 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 		this.surroundingSelector = surroundingSelector;
 		this.drive = drive;
 		this.orientation = orientation;
-		this.desiredSurroundingRotationDegrees = desiredSurroundingRotationDegrees;
+		this.desiredSurroundingRotation = desiredSurroundingRotation;
 		this.targetDistanceBack = targetDistanceBack;
 
 		this.successAction = successAction;
-		this.eventSender = eventSender;
-		
+		this.soundMap = soundMap;
+
 		nextAction = failAction;
 	}
 	
@@ -77,9 +78,7 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 		final boolean failed;
 		if(surrounding != null && surrounding.getTimestamp() + TARGET_VALIDITY_DURATION >= now){
 			if(!hasFound){
-				if(eventSender != null) {
-					eventSender.sendEvent(SoundEvents.TARGET_FOUND);
-				}
+				soundMap.getTargetFound().play();
 				hasFound = true;
 			}
 			failed = false;
@@ -93,9 +92,7 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 				failureStartTime = now;
 			}
 			if(failureStartTime + FAIL_NOTIFY_TIME < now && (lastFailSound == null || lastFailSound + 1 < now)){
-				if(eventSender != null) {
-					eventSender.sendEvent(SoundEvents.TARGET_FAILED);
-				}
+				soundMap.getTargetFailed().play();
 				lastFailSound = clock.getTimeSeconds();
 			}
 			if(failureStartTime + MAX_FAIL_TIME < System.currentTimeMillis()){
@@ -109,12 +106,11 @@ public class StrafeLineUpAction extends SimpleAction implements DistanceAwayLink
 	private void useSurrounding(Surrounding surrounding){
 		Transform2 vision = surrounding.getTransform();
 		vision = Transform2.fromRadians(vision.getPosition().getNormalized().times(vision.getPosition().getMagnitude() - targetDistanceBack), vision.getRotationRadians());
-		double yawDegrees = vision.getRotationDegrees() - desiredSurroundingRotationDegrees;
+		double yawDegrees = vision.getRotationDegrees() - desiredSurroundingRotation.getDegrees();
 		yawDegrees = minChange(yawDegrees, 0, 360);
 		double yawTurnAmount = max(-1, min(1, yawDegrees / -30));
 
 		Transform2 reversed = vision.getReversed();
-//		Vector2 translate = vision.getPosition().getNormalized();
         Vector2 translate = new Transform2(reversed.getPosition().times(1, 3), reversed.getRotation())
 				.getReversed().getPosition();
 

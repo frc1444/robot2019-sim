@@ -1,5 +1,6 @@
 package com.first1444.frc.robot2019.gdx
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.physics.box2d.BodyDef
 import com.badlogic.gdx.physics.box2d.EdgeShape
@@ -32,6 +33,7 @@ import com.first1444.sim.gdx.entity.EntityOrientation
 import com.first1444.sim.gdx.implementations.deepspace2019.surroundings.VisionProvider
 import com.first1444.sim.gdx.init.RobotCreator
 import com.first1444.sim.gdx.init.UpdateableCreator
+import com.first1444.sim.gdx.sound.GdxSoundCreator
 import com.first1444.sim.gdx.velocity.AccelerateSetPointHandler
 import edu.wpi.first.networktables.NetworkTableInstance
 import me.retrodaredevil.action.Actions
@@ -144,6 +146,7 @@ object MyRobotCreator : RobotCreator {
                     data.driverStation, PrintStreamFrcLogger(System.err, System.err), updateableData.clock,
                     shuffleboardMap,
                     joystick, GdxControllerPartCreator(IndexedControllerProvider(1)), GdxControllerPartCreator(IndexedControllerProvider(2)), DisconnectedRumble.getInstance(),
+                    GdxSoundCreator { Gdx.files.internal(it) },
                     EntityOrientation(entity),
                     swerveDriveData,
                     DummyLift(reportMap), DummyCargoIntake(reportMap), DummyHatchIntake(reportMap), DummyClimber(reportMap),

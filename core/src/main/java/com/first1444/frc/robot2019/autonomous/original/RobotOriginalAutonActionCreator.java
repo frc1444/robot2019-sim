@@ -86,9 +86,10 @@ public class RobotOriginalAutonActionCreator implements OriginalAutonActionCreat
 		        robot.getClock(),
 				robot.getSurroundingProvider(),
 				robot.getDrive(), robot.getOrientation(),
+				hatch ? robot.getDimensions().getHatchManipulatorPerspective().getOffset() : robot.getDimensions().getCargoManipulatorPerspective().getOffset(),
 				Actions.createRunOnce(() -> fail[0] = true),
 				Actions.createRunOnce(() -> success[0] = true),
-				robot.getSoundSender()
+				robot.getSoundMap()
 		);
 		final boolean[] finalActionSuccess = {false};
 		return new Actions.ActionQueueBuilder(

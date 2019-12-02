@@ -7,12 +7,18 @@ import com.first1444.sim.api.Vector2;
 import me.retrodaredevil.action.Action;
 
 public interface AutonomousActionCreator {
+    interface DesiredRotationProvider {
+        Rotation2 getDesiredRotation(Vector2 position);
+    }
+
     Action createLogMessageAction(String message);
     Action createLogWarningAction(String message);
     Action createLogErrorAction(String message);
 
     Action createTurnToOrientation(Rotation2 desiredOrientation);
-    Action createMoveToAbsolute(Vector2 position);
+    Action createMoveToAbsolute(double speed, Vector2 position);
+    Action createMoveToAbsolute(double speed, Vector2 position, Rotation2 faceDirection);
+    Action createMoveToAbsolute(double speed, Vector2 position, DesiredRotationProvider desiredRotationProvider);
 
     Action createCargoShipPlaceHatchUseVision(Action failAction, Action successAction);
     Action createCargoShipPlaceCargoUseVision(Action failAction, Action successAction);
