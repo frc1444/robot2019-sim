@@ -1,85 +1,108 @@
 package com.first1444.frc.robot2019;
 
 
-
-import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.I2C;
 
-import java.nio.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * A class that Mike made in 2018 that Josh copied in 2019
  */
-public class BNO055 implements Gyro {
+public class BNO055 implements AutoCloseable{
+	private final I2C i2c;
+	/** The current {@link Page} or null if invalid */
+	private Page pageCache = null;
+	/** The mode cache. Once set to a non-null value, this should never be set back to null, instead use {@link #modeCacheInvalid} = true */
+	private IMUMode currentMode;
+	private boolean modeCacheInvalid = true;
 
-	/**
-	 * Construct a BNO055 IMU object and initialize.
-	 */
-	public BNO055() {
-		page = 0;
-		m_i2c = new I2C(I2C.Port.kOnboard, 0x28);
-		//Select page 0
-		m_i2c.write(REG_PAGE0.PAGE_ID, 0);
-		//Set units for m/s2, Deg/s, degrees, degC,
-		//Pitch: -180 to 180 Clockwise+, Roll: -90 - 90, Heading/Yaw: 0-360 clockwise+
-		m_i2c.write(REG_PAGE0.UNIT_SELECT, 0x0);
-		
-		gyro_heading_offset = 0.0;
-	};
-	
 	/**
 	 * Construct a BNO055 IMU object and initialize.
 	 * @param addr Specify address of IMU (0x28 default or 0x29)
 	 */
-	public BNO055(int addr) {
-		page = 0;
-		m_i2c = new I2C(I2C.Port.kOnboard, addr);
-		//Select page 0
-		m_i2c.write(REG_PAGE0.PAGE_ID, 0);
-		//Set units for m/s2, Rps, Radians, degC,
-		//Pitch: -Pi to Pi Clockwise+, Roll: -Pi/2 - Pi/2, Heading/Yaw: 0-2Pi clockwise+
-		m_i2c.write(REG_PAGE0.UNIT_SELECT, 0x6);
-	};
+	public BNO055(IMUMode startingMode, int addr) {
+		i2c = new I2C(I2C.Port.kOnboard, addr);
+		currentMode = startingMode;
+		reinitialize();
+	}
+
+	public BNO055(IMUMode startingMode){
+		this(startingMode, 0x28);
+	}
+	
+	public BNO055() {
+		this(IMUMode.NDOF);
+	}
+	public void clearCache(){
+		pageCache = null;
+		modeCacheInvalid = true;
+	}
+	public void reinitialize(){
+		clearCache();
+		setPage(Page.PAGE0);
+		//Set units for m/s2, Deg/s, degrees, degC,
+		//Pitch: -180 to 180 Clockwise+, Roll: -90 - 90, Heading/Yaw: 0-360 clockwise+
+		i2c.write(REG_PAGE0.UNIT_SELECT, 0x0);
+		IMUMode mode = currentMode;
+		if(mode != null){
+			setMode(mode);
+		}
+	}
+
+	@Override
+	public void close() {
+		i2c.close();
+	}
+
+	private void setPage(Page page){
+		requireNonNull(page);
+	    if(pageCache == page){
+	    	return;
+		}
+		i2c.write(REG_PAGE0.PAGE_ID, page.value);
+	    pageCache = page;
+	}
+
+	public boolean isConnected(){
+		return i2c.addressOnly();
+	}
 	
 	/**
 	 * Check state of System Calibration
 	 * @return Returns true if Fully Calibrated
 	 */
 	public boolean isCalibrated() {
+	    return getCalibrationData().sys;
+	}
+	public CalibrationData getCalibrationData(){
+
 		byte[] result = {0};
-		if(page != 0) {
-			page = 0;
-			m_i2c.write(REG_PAGE0.PAGE_ID, 0);
-		}
-		
-		m_i2c.read(REG_PAGE0.CALIB_STAT, 1, result);
+
+		setPage(Page.PAGE0);
+		i2c.read(REG_PAGE0.CALIB_STAT, 1, result);
 		//This actually returns <SYS><GYR><ACC><MAG>
 		//3=Calibrated, 0=not. We check SYS status.
 
-		return (result[0]>0x3F);
-	};
+		return new CalibrationData(result[0]);
+	}
 
-	/*
-	public void SetMode(int mode) {
-		if(page != 0) {
-			page = 0;
-			m_i2c.write(REG_PAGE0.PAGE_ID, 0);
-		}
-		m_i2c.write(REG_PAGE0.SYS_MODE, (byte)mode);
-	};
-	*/
-	
 	/**
 	 * Set IMU operating mode
 	 * @param mode Operating mode for IMU.
 	 */
-	public void SetMode(IMUMode mode) {
-		if(page != 0) {
-			page = 0;
-			m_i2c.write(REG_PAGE0.PAGE_ID, 0);
+	public void setMode(IMUMode mode) {
+		requireNonNull(mode);
+		if(!modeCacheInvalid && currentMode == mode){
+			return;
 		}
-		m_i2c.write(REG_PAGE0.SYS_MODE, (byte)mode.val);
-	};
+	    setPage(Page.PAGE0);
+		i2c.write(REG_PAGE0.SYS_MODE, mode.val);
+		currentMode = mode;
+		modeCacheInvalid = false;
+	}
 	
 	/**
 	 * Read and return latest Euler vector data from IMU.
@@ -89,99 +112,52 @@ public class BNO055 implements Gyro {
 	 * Pitch - Pitch Value: -PI - PI.<br>
 	 * @return a EulerData class representing the 3 Euler angles
 	 */
-	public EulerData GetEulerData() {
+	public EulerData getEulerData() {
 		ByteBuffer result = ByteBuffer.allocateDirect(6);
-		if(page != 0) {
-			page = 0;
-			m_i2c.write(REG_PAGE0.PAGE_ID, 0);
-		}
-		
-		m_i2c.read(REG_PAGE0.EUL_HEAD_LB, 6, result);
+		setPage(Page.PAGE0);
+		i2c.read(REG_PAGE0.EUL_HEAD_LB, 6, result);
 		result.order(ByteOrder.LITTLE_ENDIAN);
 		
-		EulerData ed = new EulerData(result);
-		
-		return ed;
+		return new EulerData(result);
 	}
 	
-	/* Begin Gyro Implementation */
-	@Override
-	public double getRate() {
-		//Not currently implemented
-		return 0.0;
-	}
 
-	@Override
-	public double getAngle() {
-		return GetEulerData().heading - gyro_heading_offset;
-	}
+	// region Orientation Implementation
+	// endregion
 
-	@Override
-	public void free() {
-		//Nah
-	}
-	
-	@Override
-	public void close() throws Exception {
-	
-	}
-	
-	@Override
-	public void calibrate() {
-		//The BNO055 IMU auto-calibrates
-	}
-
-	@Override
-	public void reset() {
-		gyro_heading_offset = GetEulerData().heading;
-	}
-	
-	/* End Gyro Implementation */
-	
-	private I2C m_i2c;
-	private int page;
-	private double gyro_heading_offset;
-
-	/*
+	/**
 	 * Object for holding Euler heading data.
-	 * heading - Yaw/Heading value: 0 - 2PI Clockwise+.
-	 * Roll - Roll Value: -PI/2 - PI/2 Clockwise+.
-	 * Pitch - Pitch Value: -PI - PI.
+	 * heading - Yaw/Heading value: 0 - 360 Clockwise+.
+	 * Roll - Roll Value: -90 - 90 Clockwise+.
+	 * Pitch - Pitch Value: -180 - 180.
 	 */
-	static class EulerData {
-		public double heading;
-		public double roll;
-		public double pitch;
+	public static class EulerData {
+		final double heading;
+		final double roll;
+		final double pitch;
 		
 		public EulerData(ByteBuffer data) {
 			heading = (data.getShort(0) / 16.0);
 			roll = data.getShort(2) / 16.0;
 			pitch = data.getShort(4) / 16.0;
-			/*
-			heading = (data.getShort(0) / 900.0);
-			roll = data.getShort(2) / 900.0;
-			pitch = data.getShort(4) / 900.0;
-			*/
 		}
 	}
+	public static class CalibrationData {
+		private final boolean sys, gyro, accel, mag;
 
-	/*
-	static class MODES {
-		static final int CONFIG = 0;
-		static final int ACCONLY = 1;
-		static final int MAG_ONLY = 2;
-		static final int GYR_ONLY = 3;
-		static final int ACC_MAG = 4;
-		static final int ACC_GYR = 5;
-		static final int MAG_GYR = 6;
-		static final int A_M_G = 7;
-		static final int IMU = 8;
-		static final int COMPASS = 9;
-		static final int M4G = 10;
-		static final int NDOF_FMC_OFF = 11;
-		static final int NDOF = 12;
+		private CalibrationData(byte result) {
+		    sys = ((result >> 6) & 3) != 0;
+		    gyro = ((result >> 4) & 3) != 0;
+		    accel = ((result >> 2) & 3) != 0;
+		    mag = (result & 3) != 0;
+		}
+		public boolean isSystem(){ return sys; }
+		public boolean isGyro(){ return gyro; }
+		public boolean isAccelerometer(){ return accel; }
+		public boolean isMagnetometer(){ return mag; }
 	}
-	*/
+
+	@SuppressWarnings("unused")
 	public enum IMUMode {
 		CONFIG(0),
 		ACCONLY(1),
@@ -197,15 +173,25 @@ public class BNO055 implements Gyro {
 		NDOF_FMC_OFF(11),
 		NDOF(12);
 		
-		public final byte val;
+		private final byte val;
 		
 		IMUMode(int x){
 			this.val = (byte)x;
 		}
 	}
+
+	private enum Page {
+		PAGE0(0), PAGE1(1);
+		private final int value;
+
+		Page(int value) {
+			this.value = value;
+		}
+	}
 	
 	//Most config is on PAGE 1
-	static class REG_PAGE1 {
+	@SuppressWarnings("unused")
+	private static class REG_PAGE1 {
 		static final int PAGE_ID = 7;	//Write this to change PAGE (0,1)
 		static final int ACC_SET = 8;	//Ah to have structs...
 		static final int MAG_SET = 9;
@@ -236,7 +222,8 @@ public class BNO055 implements Gyro {
 	}
 	
 	//Most of the Data Output is on Page 0
-	static class REG_PAGE0{
+	@SuppressWarnings("unused")
+	private static class REG_PAGE0 {
 		static final int CHIP_ID = 0;
 		static final int ACC_ID = 1;
 		static final int MAG_ID = 2;

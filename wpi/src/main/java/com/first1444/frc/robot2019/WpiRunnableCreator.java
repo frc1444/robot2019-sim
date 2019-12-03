@@ -89,14 +89,13 @@ public class WpiRunnableCreator implements RunnableCreator {
 		final var climber = new MotorClimber(new TalonSRX(Constants.CLIMB_LIFT_PIVOT_ID), new VictorSPX(Constants.CLIMB_DRIVE_ID));
 
 		final BNO055 gyro = new BNO055();
-		gyro.SetMode(BNO055.IMUMode.NDOF);
 
 		final Robot[] robotReference = {null};
 		Robot robot = new Robot(
 				driverStation, DriverStationLogger.INSTANCE, new WpiClock(), shuffleboardMap,
 				InputUtil.createPS4Controller(new WpiInputCreator(0)), new WpiInputCreator(1), new WpiInputCreator(2), new DualShockRumble(new WpiInputCreator(5).createRumble()),
 				DummySoundCreator.INSTANCE, // TODO sounds
-				new WpiMutableOrientation(gyro, true),
+				new BNOOrientationHandler(gyro),
 				data, lift, cargoIntake, hatchIntake, climber,
 				Collections::emptyList, // TODO vision
 				new CameraSystem(shuffleboardMap, () -> robotReference[0].getTaskSystem())

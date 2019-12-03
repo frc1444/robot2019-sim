@@ -26,6 +26,7 @@ import com.first1444.sim.api.frc.AdvancedIterativeRobotBasicRobot
 import com.first1444.sim.api.frc.BasicRobotRunnable
 import com.first1444.sim.api.frc.sim.DriverStationSendable
 import com.first1444.sim.api.frc.sim.PrintStreamFrcLogger
+import com.first1444.sim.api.sensors.DefaultOrientationHandler
 import com.first1444.sim.gdx.*
 import com.first1444.sim.gdx.drivetrain.swerve.BodySwerveModule
 import com.first1444.sim.gdx.entity.ActorBodyEntity
@@ -147,7 +148,7 @@ object MyRobotCreator : RobotCreator {
                     shuffleboardMap,
                     joystick, GdxControllerPartCreator(IndexedControllerProvider(1)), GdxControllerPartCreator(IndexedControllerProvider(2)), DisconnectedRumble.getInstance(),
                     GdxSoundCreator { Gdx.files.internal(it) },
-                    EntityOrientation(entity),
+                    DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
                     DummyLift(reportMap), DummyCargoIntake(reportMap), DummyHatchIntake(reportMap), DummyClimber(reportMap),
                     VisionProvider(entity, 2.0, updateableData.clock),

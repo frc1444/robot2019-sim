@@ -28,9 +28,6 @@ public interface RobotInput extends ControllerInput {
 	/** @return An InputPart with a range of [-1..1] where a negative value is intaking and positive is spitting*/
 	InputPart getCargoIntakeSpeed();
 	
-	@Deprecated
-	InputPart getHatchManualPivotSpeed();
-	
 	InputPart getHatchPivotGroundPreset();
 	InputPart getHatchPivotReadyPreset();
 	InputPart getHatchPivotStowedPreset();
@@ -51,6 +48,7 @@ public interface RobotInput extends ControllerInput {
 	
 	InputPart getAutonomousCancelButton();
 	JoystickPart getResetGyroJoy();
+	InputPart getGyroReinitializeButton();
 	
 	ControllerRumble getDriverRumble();
 	

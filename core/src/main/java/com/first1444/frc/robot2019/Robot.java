@@ -20,9 +20,6 @@ import com.first1444.frc.robot2019.autonomous.original.OriginalAutonomousModeCre
 import com.first1444.frc.robot2019.autonomous.original.RobotOriginalAutonActionCreator;
 import com.first1444.frc.robot2019.autonomous.actions.TimedCargoIntake;
 import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
-import com.first1444.frc.robot2019.event.EventSender;
-import com.first1444.frc.robot2019.event.SoundEvents;
-import com.first1444.frc.robot2019.event.TCPEventSender;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
@@ -31,9 +28,9 @@ import com.first1444.frc.robot2019.sound.SoundMap;
 import com.first1444.frc.robot2019.subsystems.*;
 import com.first1444.frc.robot2019.subsystems.implementations.DefaultTaskSystem;
 import com.first1444.frc.robot2019.vision.VisionPacketListener;
-import com.first1444.frc.util.OrientationSendableHelper;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Rotation2;
+import com.first1444.sim.api.distance.*;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
 import com.first1444.sim.api.drivetrain.swerve.SwerveDrive;
@@ -45,6 +42,7 @@ import com.first1444.sim.api.scheduler.match.DefaultMatchScheduler;
 import com.first1444.sim.api.scheduler.match.MatchScheduler;
 import com.first1444.sim.api.scheduler.match.MatchTime;
 import com.first1444.sim.api.sensors.Orientation;
+import com.first1444.sim.api.sensors.OrientationHandler;
 import com.first1444.sim.api.sound.SoundCreator;
 import com.first1444.sim.api.surroundings.SurroundingProvider;
 import me.retrodaredevil.action.*;
@@ -89,9 +87,14 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 		controlConfig.fullAnalogDeadzone = .075;
 		controlConfig.analogDeadzone = .02;
 		controlConfig.cacheAngleAndMagnitudeInUpdate = false;
+		controlConfig.useAbstractedIsDownIfPossible = false; // On PS4 controllers, this option is too sensitive
 		this.controlConfig = controlConfig;
 	}
 	private final RobotInput robotInput;
+	/** The distance accumulator where the position will never jump. This should be updated using {@link DistanceAccumulator#run()} */
+    private final DistanceAccumulator relativeDistanceAccumulator; // TODO put these in their own class
+    /** The distance accumulator representing the absolute position of the robot. This may jump around as we correct the position over time. This does not have to be updated. */
+    private final MutableDistanceAccumulator absoluteDistanceAccumulator;
 
 	private final MutableMappedChooserProvider<Perspective> autonomousPerspectiveChooser;
 	private final TaskSystem taskSystem;
@@ -121,7 +124,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 			ShuffleboardMap shuffleboardMap,
 			StandardControllerInput controller, ControllerPartCreator port1, ControllerPartCreator port2, ControllerRumble rumble,
 			SoundCreator soundCreator,
-			Orientation rawOrientation,
+			OrientationHandler rawOrientationHandler,
 			FourWheelSwerveDriveData fourWheelSwerveData,
 			Lift lift, CargoIntake cargoIntake, HatchIntake hatchIntake, Climber climber,
 			SurroundingProvider surroundingProvider,
@@ -147,8 +150,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
 		soundMap = new DefaultSoundMap(soundCreator);
 
-		orientationSystem = new OrientationSystem(shuffleboardMap, rawOrientation, robotInput);
-		OrientationSendableHelper.addOrientation(shuffleboardMap.getUserTab(), getOrientation());
+		orientationSystem = new OrientationSystem(shuffleboardMap, rawOrientationHandler, robotInput);
 
 		this.drive = new FourWheelSwerveDrive(fourWheelSwerveData);
 		final DefaultTaskSystem defaultTaskSystem = new DefaultTaskSystem(robotInput);
@@ -162,12 +164,11 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 				"FLIPPED", true
 		);
 		cameraIDSwitchedChooser.set(cameraIDSwitchedMap, "NOT FLIPPED");
-		System.out.println(cameraIDSwitchedChooser.getSelectedKey());
-		System.out.println(cameraIDSwitchedChooser.getDefaultKey());
-		System.out.println(cameraIDSwitchedChooser.getSelected());
 		shuffleboardMap.getDevTab().add("Camera IDs Flipped", new SendableComponent<>(new ChooserSendable(cameraIDSwitchedChooser)));
 		dimensions = new DynamicRobotDimensions(Constants.Dimensions.INSTANCE, cameraIDSwitchedChooser::getSelected);
 
+		relativeDistanceAccumulator = new DeltaDistanceAccumulator(new OrientationDeltaDistanceCalculator(new SwerveDeltaDistanceCalculator(fourWheelSwerveData), orientationSystem.getOrientation()));
+		absoluteDistanceAccumulator = new DefaultMutableDistanceAccumulator(relativeDistanceAccumulator, false);
 
 		autonomousPerspectiveChooser = new SimpleMappedChooserProvider<>();
 		Map<String, Perspective> autonomousPerspectiveMap = new HashMap<>(Map.of(
@@ -201,7 +202,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 				orientationSystem,
 				defaultTaskSystem,
 				Actions.createRunForever(defaultMatchScheduler),
-				new SwerveCalibrateAction(this::getDrive, robotInput),
+				new SwerveCalibrateAction(drive, robotInput),
 				extraAction
 		).clearAllOnEnd(false).canRecycle(false).build();
 		actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);

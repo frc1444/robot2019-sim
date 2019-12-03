@@ -1,33 +1,34 @@
 package com.first1444.frc.robot2019.input;
 
 import me.retrodaredevil.controller.SimpleControllerInput;
-import me.retrodaredevil.controller.input.*;
+import me.retrodaredevil.controller.input.AxisType;
+import me.retrodaredevil.controller.input.InputPart;
+import me.retrodaredevil.controller.input.JoystickPart;
+import me.retrodaredevil.controller.input.implementations.HighestPositionInputPart;
+import me.retrodaredevil.controller.input.implementations.MultiplierInputPart;
+import me.retrodaredevil.controller.input.implementations.ScaledInputPart;
+import me.retrodaredevil.controller.input.implementations.TwoWayInput;
 import me.retrodaredevil.controller.output.ControllerRumble;
 import me.retrodaredevil.controller.output.DisconnectedRumble;
 import me.retrodaredevil.controller.types.ExtremeFlightJoystickControllerInput;
 import me.retrodaredevil.controller.types.LogitechAttack3JoystickControllerInput;
 import me.retrodaredevil.controller.types.RumbleCapableController;
 import me.retrodaredevil.controller.types.StandardControllerInput;
-import me.retrodaredevil.controller.input.implementations.*;
-
-import java.util.function.Supplier;
 
 /**
  * A class that takes care of all the controllers connected to the driver station and
  * exposes some of their inputs to be used in other parts of the program
  * <p>
- * This must be updated each call to period, and is usually done by a {@link me.retrodaredevil.controller.ControllerManager}
+ * This must be updated each call to period
  */
 public class DefaultRobotInput extends SimpleControllerInput implements RobotInput {
 	private final StandardControllerInput controller;
-	private final Supplier<ControllerRumble> rumbleSupplier;
+	private final ControllerRumble rumble;
 	private final ExtremeFlightJoystickControllerInput operatorJoy;
 	private final LogitechAttack3JoystickControllerInput climbJoy;
 
-	private final InputPart movementSpeed;
 	private final InputPart liftManualSpeed;
 	private final InputPart cargoIntakeSpeed;
-	private final InputPart hatchManualPivotSpeed;
 	private final InputPart climbLiftSpeed;
 	private final InputPart climbWheelSpeed;
 	
@@ -36,60 +37,51 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	 * @param controller
 	 * @param operatorJoy
 	 * @param climbJoy
-	 * @param rumble The rumble or null. This CAN have a parent
+	 * @param rumble The rumble or null. If non-null, it will be updated.
 	 */
-	public DefaultRobotInput(StandardControllerInput controller,
-							 ExtremeFlightJoystickControllerInput operatorJoy,
-							 LogitechAttack3JoystickControllerInput climbJoy,
-							 ControllerRumble rumble){
+	public DefaultRobotInput(
+			StandardControllerInput controller,
+			ExtremeFlightJoystickControllerInput operatorJoy,
+			LogitechAttack3JoystickControllerInput climbJoy,
+            ControllerRumble rumble){
 		this.controller = controller;
 		this.operatorJoy = operatorJoy;
 		this.climbJoy = climbJoy;
 		if(rumble != null){
 			partUpdater.addPartAssertNotPresent(rumble);
-			this.rumbleSupplier = () -> rumble;
+			this.rumble = rumble;
 		} else {
 			if (controller instanceof RumbleCapableController) {
-				this.rumbleSupplier = ((RumbleCapableController) controller)::getRumble;
+				this.rumble = ((RumbleCapableController) controller).getRumble();
 			} else {
-				this.rumbleSupplier = () -> DisconnectedRumble.getInstance();
+				this.rumble = DisconnectedRumble.getInstance();
 			}
 		}
 		partUpdater.addPartsAssertNonePresent(controller, operatorJoy, climbJoy); // add the controllers as children
 		
-		movementSpeed = new TwoWayInput(
-				References.create(controller::getRightTrigger), // forward
-				References.create(controller::getLeftTrigger) // backward
-		);
-		partUpdater.addPartAssertNotPresent(movementSpeed);
 		liftManualSpeed = new MultiplierInputPart(
-				References.create(() -> operatorJoy.getMainJoystick().getYAxis()), // analog full
+				operatorJoy.getMainJoystick().getYAxis(), // analog full
 				new HighestPositionInputPart(
-						References.create(operatorJoy::getTrigger),
-						References.create(this::getCargoLiftManualAllowed),
-						References.create(this::getLiftManualOverrideAllowed)
+						operatorJoy.getTrigger(),
+						this.getCargoLiftManualAllowed(),
+						this.getLiftManualOverrideAllowed()
 				)
 		);
 		partUpdater.addPartAssertNotPresent(liftManualSpeed);
 		cargoIntakeSpeed = new MultiplierInputPart(
 				true,
-				new ScaledInputPart(AxisType.ANALOG, References.create(operatorJoy::getSlider)), // analog
-				References.create(() -> operatorJoy.getDPad().getYAxis()) // digital full
+				new ScaledInputPart(AxisType.ANALOG, operatorJoy.getSlider()), // analog
+				operatorJoy.getDPad().getYAxis() // digital full
 		);
 		partUpdater.addPartAssertNotPresent(cargoIntakeSpeed);
-		hatchManualPivotSpeed = new MultiplierInputPart(
-				References.create(() -> climbJoy.getMainJoystick().getYAxis()), // analog full
-				References.create(climbJoy::getThumbUpper) // digital
-		);
-		partUpdater.addPartAssertNotPresent(hatchManualPivotSpeed);
 		climbLiftSpeed = new MultiplierInputPart(
-				References.create(() -> climbJoy.getMainJoystick().getYAxis()),
-				References.create(climbJoy::getTrigger)
+				climbJoy.getMainJoystick().getYAxis(),
+				climbJoy.getTrigger()
 		);
 		partUpdater.addPartAssertNotPresent(climbLiftSpeed);
 		climbWheelSpeed = new MultiplierInputPart(
-				References.create(() -> climbJoy.getMainJoystick().getYAxis()),
-				References.create(climbJoy::getThumbLower)
+				climbJoy.getMainJoystick().getYAxis(),
+				climbJoy.getThumbLower()
 		);
 		partUpdater.addPartAssertNotPresent(climbWheelSpeed);
 	}
@@ -107,14 +99,14 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 
 	@Override
 	public InputPart getMovementSpeed() {
-		return movementSpeed;
+		return controller.getRightTrigger();
 	}
 	// endregion
 	
 	
 	@Override
 	public InputPart getVisionAlign() {
-		return controller.getRightBumper();
+		return controller.getLeftTrigger();
 	}
 	
 	@Override
@@ -142,10 +134,6 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 		return cargoIntakeSpeed;
 	}
 	
-	@Override
-	public InputPart getHatchManualPivotSpeed() {
-		return hatchManualPivotSpeed;
-	}
 	// region Hatch Pivot Presets
 	@Override
 	public InputPart getHatchPivotGroundPreset() {
@@ -220,10 +208,15 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 	public JoystickPart getResetGyroJoy() {
 		return controller.getDPad();
 	}
-	
+
+	@Override
+	public InputPart getGyroReinitializeButton() {
+		return controller.getFaceUp();
+	}
+
 	@Override
 	public ControllerRumble getDriverRumble() {
-		return rumbleSupplier.get();
+	    return rumble;
 	}
 	
 	@Override

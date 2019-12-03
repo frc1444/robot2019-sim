@@ -8,13 +8,17 @@ import com.first1444.sim.api.surroundings.Surrounding3DExtra;
 import com.first1444.sim.api.surroundings.SurroundingProvider;
 import com.google.gson.*;
 import org.jetbrains.annotations.NotNull;
+import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class VisionPacketListener extends Thread implements SurroundingProvider {
-	public static final Gson GSON = new GsonBuilder()
+	private static final Gson GSON = new GsonBuilder()
 			.create();
 
 	private final Clock clock;
@@ -45,7 +49,7 @@ public class VisionPacketListener extends Thread implements SurroundingProvider 
 	@Override
 	public void run() {
 		try(ZContext context = new ZContext()) {
-			ZMQ.Socket socket = context.createSocket(ZMQ.SUB);
+			ZMQ.Socket socket = context.createSocket(SocketType.SUB);
 			socket.connect("tcp://" + ip + ":" + port);
 			socket.setLinger(0);
 			socket.subscribe("".getBytes());
