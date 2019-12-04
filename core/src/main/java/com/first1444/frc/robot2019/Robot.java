@@ -92,7 +92,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 	}
 	private final RobotInput robotInput;
 	/** The distance accumulator where the position will never jump. This should be updated using {@link DistanceAccumulator#run()} */
-    private final DistanceAccumulator relativeDistanceAccumulator; // TODO put these in their own class
+    private final DistanceAccumulator relativeDistanceAccumulator;
     /** The distance accumulator representing the absolute position of the robot. This may jump around as we correct the position over time. This does not have to be updated. */
     private final MutableDistanceAccumulator absoluteDistanceAccumulator;
 
@@ -199,6 +199,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 		
 		constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder( // NOTE, without forceUpdateInOrder(true), these will not update in order
 				Actions.createRunForeverRecyclable(drive),
+				Actions.createRunForeverRecyclable(relativeDistanceAccumulator),
 				orientationSystem,
 				defaultTaskSystem,
 				Actions.createRunForever(defaultMatchScheduler),

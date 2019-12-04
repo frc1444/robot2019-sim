@@ -7,29 +7,34 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.*;
 import com.first1444.dashboard.shuffleboard.ShuffleboardContainer;
 import com.first1444.frc.robot2019.subsystems.swerve.ModuleConfig;
+import com.first1444.frc.robot2019.subsystems.swerve.SwerveModuleEvent;
 import com.first1444.sim.api.MathUtil;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.ValueMap;
 import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.drivetrain.swerve.SwerveModule;
+import com.first1444.sim.api.event.Event;
 import com.first1444.sim.api.event.EventHandler;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 
 import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
 import static java.lang.Math.*;
 
 public class TalonSwerveModule implements SwerveModule {
 	private static final int CLOSED_LOOP_TIME = 4;
-	private static final double WHEEL_CIRCUMFERENCE = 4 * Math.PI;
-//	private static final boolean QUICK_REVERSE = true;
+	private static final double WHEEL_CIRCUMFERENCE_INCHES = 4 * Math.PI;
 	private static final boolean VELOCITY_CONTROL = true;
 	
 	private final String name;
 	private final int quadCountsPerRevolution;
-	
+
 	private final BaseMotorController drive;
 	private final TalonSRX steer;
 	private final ValueMap<ModuleConfig> moduleConfig;
@@ -38,15 +43,11 @@ public class TalonSwerveModule implements SwerveModule {
 	private double speed = 0;
 	private double targetPositionDegrees = 0;
 	
-	/** The total distance gone. This is changed in another thread and should only be read*/
-	private volatile double totalDistanceGone = 0; // TODO for 2020, when we aren't using SwerveTracker, we won't need this, we can just use the encoder counts, we don't need to abs the integral of its derivative
-	/** The most recent value for the encoder counts on the steer module. This is changed in another thread and should only be read*/
-	private volatile int steerEncoderCountsCache = 0;
-
 	public TalonSwerveModule(
 			String name, int driveID, int steerID, int quadCountsPerRevolution,
 			MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid,
 			MutableValueMap<ModuleConfig> moduleConfig, ShuffleboardContainer debugTab) {
+		// TODO Instead of using debugTab, we will use a LiveWindow so it can be enabled and disabled.
 		this.name = name;
 		this.quadCountsPerRevolution = quadCountsPerRevolution;
 		
@@ -77,10 +78,6 @@ public class TalonSwerveModule implements SwerveModule {
 		});
 		updateEncoderOffset(moduleConfig);
 		
-		final Thread encoderThread = new Thread(new EncoderRunnable());
-		encoderThread.setDaemon(true);
-		encoderThread.start();
-		
 	}
 	private void updateEncoderOffset(ValueMap<ModuleConfig> config){
 		final int min = (int) config.getDouble(ModuleConfig.MIN_ENCODER_VALUE);
@@ -92,18 +89,8 @@ public class TalonSwerveModule implements SwerveModule {
 				currentPosition,
 				Constants.PID_INDEX, Constants.LOOP_TIMEOUT
 		);
-		steerEncoderCountsCache = currentPosition;
 	}
-	
-//	@Override
-	public void recalibrate() { // TODO
-		updateEncoderOffset(moduleConfig);
-	}
-	
-	public void setQuickReverseAllowed(boolean quickReverseAllowed) { // TODO
-		this.quickReverseAllowed = quickReverseAllowed;
-	}
-	
+
 	@Override
 	public void run() {
 		SmartDashboard.putNumber("encoder " + name, steer.getSensorCollection().getAnalogInRaw()); // TODO use abstract-dashboard for this
@@ -111,7 +98,7 @@ public class TalonSwerveModule implements SwerveModule {
 		
 		{ // steer code
 			final int wrap = getCountsPerRevolution(); // in encoder counts
-			final int current = steerEncoderCountsCache;
+			final int current = steer.getSelectedSensorPosition(Constants.PID_INDEX);
 			final int desired = (int) Math.round(targetPositionDegrees * wrap / 360.0); // in encoder counts
 
 			if(quickReverseAllowed){
@@ -150,7 +137,9 @@ public class TalonSwerveModule implements SwerveModule {
 
 	@Override
 	public double getDistanceTraveledMeters() {
-		return inchesToMeters(totalDistanceGone);
+		final double currentDistance = drive.getSelectedSensorPosition(Constants.PID_INDEX) // takes a long time - .9 ms to 5 ms
+				* WHEEL_CIRCUMFERENCE_INCHES / (double) Constants.SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION;
+		return inchesToMeters(currentDistance);
 	}
 
 	@Override
@@ -176,7 +165,7 @@ public class TalonSwerveModule implements SwerveModule {
 
 	@Override
 	public double getCurrentAngleDegrees() {
-		final int encoderPosition = steerEncoderCountsCache;
+		final int encoderPosition = steer.getSelectedSensorPosition(Constants.PID_INDEX);
 		final int totalCounts = getCountsPerRevolution();
 		return MathUtil.mod(encoderPosition * 360.0 / totalCounts, 360.0);
 	}
@@ -186,52 +175,52 @@ public class TalonSwerveModule implements SwerveModule {
 		return toRadians(getCurrentAngleDegrees());
 	}
 
+	@NotNull
 	@Override
 	public String getName() {
 		return name;
 	}
 	
 	
-	/** @return The number of encoder counds per revolution steer*/
+	/** @return The number of encoder counts per revolution steer*/
 	private int getCountsPerRevolution(){
 		return quadCountsPerRevolution;
 	}
 
+	@NotNull
 	@Override
-	public EventHandler getEventHandler() { // TODO
-		throw new UnsupportedOperationException();
+	public EventHandler getEventHandler() {
+	    return eventHandler;
 	}
-
-	/**
-	 * A runnable that should be on its own thread
-	 */
-	private class EncoderRunnable implements Runnable {
-		private static final long SLEEP_MILLIS = 60;
+	private final EventHandler eventHandler = new EventHandler() {
+		private final Set<Event> eventSet = Collections.unmodifiableSet(EnumSet.of(SwerveModuleEvent.RECALIBRATE, SwerveModuleEvent.QUICK_REVERSE_ENABLED));
 		@Override
-		public void run() {
-			double totalDistanceGone = 0;
-			double lastDistanceInches = 0;
-			while(!Thread.currentThread().isInterrupted()){
-				final double currentDistance = drive.getSelectedSensorPosition() // takes a long time - .9 ms to 5 ms
-						* WHEEL_CIRCUMFERENCE / (double) Constants.SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION;
-				totalDistanceGone += abs(currentDistance - lastDistanceInches);
-				lastDistanceInches = currentDistance;
-				TalonSwerveModule.this.totalDistanceGone = totalDistanceGone;
-				
-				try {
-					Thread.sleep(SLEEP_MILLIS);
-				} catch(InterruptedException ex){
-					break;
-				}
-				
-				steerEncoderCountsCache = steer.getSelectedSensorPosition(Constants.PID_INDEX);
-				
-				try {
-					Thread.sleep(SLEEP_MILLIS);
-				} catch(InterruptedException ex){
-					break;
-				}
-			}
+		public boolean canHandleEvent(@NotNull Event event) {
+			return eventSet.contains(event);
 		}
-	}
+
+		@Override
+		public boolean handleEvent(@NotNull Event event, @Nullable Object o) {
+			if(event == SwerveModuleEvent.RECALIBRATE){
+				updateEncoderOffset(moduleConfig);
+				return true;
+			}
+			if(event == SwerveModuleEvent.QUICK_REVERSE_ENABLED){
+				if(o instanceof Boolean){
+					quickReverseAllowed = (Boolean) o;
+				} else {
+					System.err.println(o + " was passed for quick reversed enabled data."); // We could throw an exception, but this isn't something we need to crash the program for
+				}
+				return true;
+			}
+			return false;
+		}
+
+		@NotNull
+		@Override
+		public Set<Event> getEvents() {
+			return eventSet;
+		}
+	};
+
 }

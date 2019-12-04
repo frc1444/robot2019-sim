@@ -54,7 +54,7 @@ public class MotorHatchIntake extends SimpleAction implements HatchIntake {
 //		stowMotor.configForwardSoftLimitEnable(true, Constants.INIT_TIMEOUT);
 //		stowMotor.configForwardSoftLimitThreshold(STOW_MOTOR_MAX_ENCODER_COUNTS, Constants.INIT_TIMEOUT);
 		stowMotor.setNeutralMode(NeutralMode.Brake);
-		stowMotor.config_kP(Constants.SLOT_INDEX, .3, Constants.INIT_TIMEOUT); // TODO CTRE PID
+		stowMotor.config_kP(Constants.SLOT_INDEX, .3, Constants.INIT_TIMEOUT); // notTO DO CTRE PID - Looking at this on 2019.12.03, this is probably something I was supposed to fix before stop build day...
 		stowMotor.setInverted(InvertType.InvertMotorOutput); // motor is inverted but encoder is not
 		stowMotor.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed, Constants.INIT_TIMEOUT);
 		stowMotor.configForwardLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled, Constants.INIT_TIMEOUT); // sometimes this gets tripped, so just disabled it

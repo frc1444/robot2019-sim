@@ -11,6 +11,6 @@ public interface HatchIntake extends Action {
 	void readyPosition();
 	void stowedPosition();
 	
-	boolean isDesiredPositionReached(); // TODO create an action that actually uses this
+	boolean isDesiredPositionReached(); // notTO DO create an action that actually uses this - never mind. No need for this
 	
 }

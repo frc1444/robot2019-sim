@@ -52,8 +52,7 @@ public final class Constants {
 	public static final int SLOT_INDEX = 0;
 	public static final int INIT_TIMEOUT = 10;
 	public static final int LOOP_TIMEOUT = 3;
-	public static final int LOOP_TIMEOUT_THREAD = LOOP_TIMEOUT;
-	
+
 	/** The number of encoder counts per revolution on a drive wheel on the swerve drive*/
 	public static final int SWERVE_DRIVE_ENCODER_COUNTS_PER_REVOLUTION = 534;
 	

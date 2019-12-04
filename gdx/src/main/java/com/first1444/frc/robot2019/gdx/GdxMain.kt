@@ -13,8 +13,6 @@ private fun createSelectionCreator(uiSkin: Skin, changer: ScreenChanger): Screen
     val exitButtonUpdateableCreator = ExitButtonCreator(Runnable {
         changer.change(createSelectionCreator(uiSkin, changer).create(changer))
         NetworkTableInstance.getDefault().close()
-        // TODO also find a way to reset static shuffleboard state
-        // maybe instead of using Shuffleboard.getTab, we can just create out own instances
     })
     return SelectionScreenCreator(
             uiSkin,
