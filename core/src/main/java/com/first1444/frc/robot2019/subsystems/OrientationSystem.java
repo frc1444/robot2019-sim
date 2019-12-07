@@ -12,41 +12,41 @@ import me.retrodaredevil.controller.input.InputPart;
 import static java.util.Objects.requireNonNull;
 
 public class OrientationSystem extends SimpleAction {
-	private final RobotInput robotInput;
-	private final OrientationHandler orientationHandler;
-	private final MutableOrientation orientation;
-	public OrientationSystem(ShuffleboardMap shuffleboardMap, OrientationHandler orientationHandler, RobotInput robotInput) {
-		super(false);
-		requireNonNull(shuffleboardMap);
-		this.orientationHandler = requireNonNull(orientationHandler);
-		this.orientation = new DefaultMutableOrientation(orientationHandler.getOrientation());
-		this.robotInput = requireNonNull(robotInput);
+    private final RobotInput robotInput;
+    private final OrientationHandler orientationHandler;
+    private final MutableOrientation orientation;
+    public OrientationSystem(ShuffleboardMap shuffleboardMap, OrientationHandler orientationHandler, RobotInput robotInput) {
+        super(false);
+        requireNonNull(shuffleboardMap);
+        this.orientationHandler = requireNonNull(orientationHandler);
+        this.orientation = new DefaultMutableOrientation(orientationHandler.getOrientation());
+        this.robotInput = requireNonNull(robotInput);
 
-		shuffleboardMap.getUserTab().add("Orientation",
-				new SendableComponent<>(new OrientationSendable(orientation)),
-				(metadata) -> {
-					new ComponentMetadataHelper(metadata).setSize(2, 3).setPosition(9, 1);
-					new GyroMetadataHelper(metadata).setMajorTickSpacing(90.0).setStartingAngle(90).setCounterClockwise(true);
-				}
-		);
-	}
-	public Orientation getOrientation(){
-		return orientation;
-	}
-	
-	@Override
-	protected void onUpdate() {
-		super.onUpdate();
-		// resetting the gyro code
-		final InputPart x = robotInput.getResetGyroJoy().getXAxis();
-		final InputPart y = robotInput.getResetGyroJoy().getYAxis();
-		if (x.isDown() || y.isDown()){
-			final double angle = robotInput.getResetGyroJoy().getAngle();
-			orientation.setOrientationDegrees(angle);
-		}
+        shuffleboardMap.getUserTab().add("Orientation",
+                new SendableComponent<>(new OrientationSendable(orientation)),
+                (metadata) -> {
+                    new ComponentMetadataHelper(metadata).setSize(2, 3).setPosition(9, 1);
+                    new GyroMetadataHelper(metadata).setMajorTickSpacing(90.0).setStartingAngle(90).setCounterClockwise(true);
+                }
+        );
+    }
+    public Orientation getOrientation(){
+        return orientation;
+    }
 
-		if(robotInput.getGyroReinitializeButton().isJustPressed()){
-			orientationHandler.reinitialize();
-		}
-	}
+    @Override
+    protected void onUpdate() {
+        super.onUpdate();
+        // resetting the gyro code
+        final InputPart x = robotInput.getResetGyroJoy().getXAxis();
+        final InputPart y = robotInput.getResetGyroJoy().getYAxis();
+        if (x.isDown() || y.isDown()){
+            final double angle = robotInput.getResetGyroJoy().getAngle();
+            orientation.setOrientationDegrees(angle);
+        }
+
+        if(robotInput.getGyroReinitializeButton().isJustPressed()){
+            orientationHandler.reinitialize();
+        }
+    }
 }

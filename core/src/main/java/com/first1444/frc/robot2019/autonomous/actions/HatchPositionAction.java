@@ -9,26 +9,26 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class HatchPositionAction extends SimpleAction {
-	private final Supplier<HatchIntake> hatchIntakeSupplier;
-	private final Consumer<HatchIntake> hatchIntakeAction;
-	private HatchPositionAction(Supplier<HatchIntake> hatchIntakeSupplier, Consumer<HatchIntake> hatchIntakeAction) {
-		super(true);
-		this.hatchIntakeSupplier = hatchIntakeSupplier;
-		this.hatchIntakeAction = hatchIntakeAction;
-	}
-	public static Action createReady(Supplier<HatchIntake> hatchIntakeSupplier){
-		return new HatchPositionAction(hatchIntakeSupplier, HatchIntake::readyPosition);
-	}
-	public static Action createStow(Supplier<HatchIntake> hatchIntakeSupplier){
-		return new HatchPositionAction(hatchIntakeSupplier, HatchIntake::stowedPosition);
-	}
-	
-	@Override
-	protected void onStart() {
-		super.onStart();
-		final HatchIntake hatchIntake = hatchIntakeSupplier.get();
-		Objects.requireNonNull(hatchIntake);
-		hatchIntakeAction.accept(hatchIntake);
-		setDone(hatchIntake.isDesiredPositionReached());
-	}
+    private final Supplier<HatchIntake> hatchIntakeSupplier;
+    private final Consumer<HatchIntake> hatchIntakeAction;
+    private HatchPositionAction(Supplier<HatchIntake> hatchIntakeSupplier, Consumer<HatchIntake> hatchIntakeAction) {
+        super(true);
+        this.hatchIntakeSupplier = hatchIntakeSupplier;
+        this.hatchIntakeAction = hatchIntakeAction;
+    }
+    public static Action createReady(Supplier<HatchIntake> hatchIntakeSupplier){
+        return new HatchPositionAction(hatchIntakeSupplier, HatchIntake::readyPosition);
+    }
+    public static Action createStow(Supplier<HatchIntake> hatchIntakeSupplier){
+        return new HatchPositionAction(hatchIntakeSupplier, HatchIntake::stowedPosition);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        final HatchIntake hatchIntake = hatchIntakeSupplier.get();
+        Objects.requireNonNull(hatchIntake);
+        hatchIntakeAction.accept(hatchIntake);
+        setDone(hatchIntake.isDesiredPositionReached());
+    }
 }

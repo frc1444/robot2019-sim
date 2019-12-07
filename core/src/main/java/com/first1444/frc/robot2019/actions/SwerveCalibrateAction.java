@@ -8,29 +8,29 @@ import me.retrodaredevil.action.SimpleAction;
 
 public class SwerveCalibrateAction extends SimpleAction {
     private final SwerveDrive drive;
-	private final RobotInput input;
-	public SwerveCalibrateAction(SwerveDrive drive, RobotInput input) {
-		super(false);
-		this.drive = drive;
-		this.input = input;
-	}
-	
-	@Override
-	protected void onUpdate() {
-		super.onUpdate();
-		if(input.getSwerveQuickReverseCancel().isJustPressed()){
-			for(SwerveModule module : drive.getDrivetrainData().getModules()){
+    private final RobotInput input;
+    public SwerveCalibrateAction(SwerveDrive drive, RobotInput input) {
+        super(false);
+        this.drive = drive;
+        this.input = input;
+    }
+
+    @Override
+    protected void onUpdate() {
+        super.onUpdate();
+        if(input.getSwerveQuickReverseCancel().isJustPressed()){
+            for(SwerveModule module : drive.getDrivetrainData().getModules()){
                 module.getEventHandler().handleEvent(SwerveModuleEvent.QUICK_REVERSE_ENABLED, false);
-			}
-		} else if(input.getSwerveQuickReverseCancel().isJustReleased()){
-			for(SwerveModule module : drive.getDrivetrainData().getModules()){
-				module.getEventHandler().handleEvent(SwerveModuleEvent.QUICK_REVERSE_ENABLED, true);
-			}
-		}
-		if(input.getSwerveRecalibrate().isJustPressed()){
-			for(SwerveModule module : drive.getDrivetrainData().getModules()){
-				module.getEventHandler().handleEvent(SwerveModuleEvent.RECALIBRATE, null);
-			}
-		}
-	}
+            }
+        } else if(input.getSwerveQuickReverseCancel().isJustReleased()){
+            for(SwerveModule module : drive.getDrivetrainData().getModules()){
+                module.getEventHandler().handleEvent(SwerveModuleEvent.QUICK_REVERSE_ENABLED, true);
+            }
+        }
+        if(input.getSwerveRecalibrate().isJustPressed()){
+            for(SwerveModule module : drive.getDrivetrainData().getModules()){
+                module.getEventHandler().handleEvent(SwerveModuleEvent.RECALIBRATE, null);
+            }
+        }
+    }
 }

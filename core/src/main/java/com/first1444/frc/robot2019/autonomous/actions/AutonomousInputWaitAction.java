@@ -13,23 +13,23 @@ import static java.util.Objects.requireNonNull;
  * returns true
  */
 public class AutonomousInputWaitAction extends TimedAction {
-	private final BooleanSupplier shouldWait;
-	private final BooleanSupplier shouldStart;
+    private final BooleanSupplier shouldWait;
+    private final BooleanSupplier shouldStart;
 
-	public AutonomousInputWaitAction(Clock clock, double lastSeconds, BooleanSupplier shouldWait, BooleanSupplier shouldStart) {
-		super(true, clock, lastSeconds);
-		this.shouldWait = requireNonNull(shouldWait);
-		this.shouldStart = requireNonNull(shouldStart);
-	}
+    public AutonomousInputWaitAction(Clock clock, double lastSeconds, BooleanSupplier shouldWait, BooleanSupplier shouldStart) {
+        super(true, clock, lastSeconds);
+        this.shouldWait = requireNonNull(shouldWait);
+        this.shouldStart = requireNonNull(shouldStart);
+    }
 
-	@Override
-	protected void onIsDoneRequest() {
-		super.onIsDoneRequest();
-		if(shouldStart.getAsBoolean()){
-			setDone(true);
-		}
-		if(shouldWait.getAsBoolean()){
-			setDone(false);
-		}
-	}
+    @Override
+    protected void onIsDoneRequest() {
+        super.onIsDoneRequest();
+        if(shouldStart.getAsBoolean()){
+            setDone(true);
+        }
+        if(shouldWait.getAsBoolean()){
+            setDone(false);
+        }
+    }
 }

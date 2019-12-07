@@ -16,36 +16,36 @@ import me.retrodaredevil.action.WhenDone;
  * they will be ran like a {@link LinkedAction}
  */
 public interface OriginalAutonActionCreator {
-	
-	Action createLogMessageAction(String message);
-	Action createLogWarningAction(String message);
-	Action createLogErrorAction(String message);
-	
-	Action createTurnToOrientation(Rotation2 desiredOrientation);
-	@Deprecated
-	Action createGoStraight(double distanceMeters, double speed, Rotation2 angle);
-	Action createGoStraight(double distanceMeters, double speed, Rotation2 angle, Rotation2 faceDirection);
 
-	Action createCargoShipPlaceHatchUseVision(Action failAction, Action successAction);
-	Action createCargoShipPlaceCargoUseVision(Action failAction, Action successAction);
+    Action createLogMessageAction(String message);
+    Action createLogWarningAction(String message);
+    Action createLogErrorAction(String message);
 
-	Action createRocketPlaceHatchUseVision(SlotLevel slotLevel, Action failAction, Action successAction);
-	Action createRocketPlaceCargoUseVision(SlotLevel slotLevel, Action failAction, Action successAction);
-	
-	/**
-	 * @return An action that is will be done once the hatch intake is in the ready position
-	 */
-	Action createExtendHatch();
-	Action createStowHatch();
-	
-	Action createDropHatch();
-	Action createGrabHatch();
-	
-	Action createReleaseCargo();
-	
-	/**
-	 * @param position The desired position
-	 * @return Creates an action that's done when the lift has reached the desired position
-	 */
-	Action createRaiseLift(Lift.Position position);
+    Action createTurnToOrientation(Rotation2 desiredOrientation);
+    @Deprecated
+    Action createGoStraight(double distanceMeters, double speed, Rotation2 angle);
+    Action createGoStraight(double distanceMeters, double speed, Rotation2 angle, Rotation2 faceDirection);
+
+    Action createCargoShipPlaceHatchUseVision(Action failAction, Action successAction);
+    Action createCargoShipPlaceCargoUseVision(Action failAction, Action successAction);
+
+    Action createRocketPlaceHatchUseVision(SlotLevel slotLevel, Action failAction, Action successAction);
+    Action createRocketPlaceCargoUseVision(SlotLevel slotLevel, Action failAction, Action successAction);
+
+    /**
+     * @return An action that is will be done once the hatch intake is in the ready position
+     */
+    Action createExtendHatch();
+    Action createStowHatch();
+
+    Action createDropHatch();
+    Action createGrabHatch();
+
+    Action createReleaseCargo();
+
+    /**
+     * @param position The desired position
+     * @return Creates an action that's done when the lift has reached the desired position
+     */
+    Action createRaiseLift(Lift.Position position);
 }

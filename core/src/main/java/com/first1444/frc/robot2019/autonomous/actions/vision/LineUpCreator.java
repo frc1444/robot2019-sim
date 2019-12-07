@@ -14,38 +14,38 @@ import me.retrodaredevil.action.Actions;
 import me.retrodaredevil.action.WhenDone;
 
 public final class LineUpCreator {
-	private LineUpCreator() { throw new UnsupportedOperationException(); }
-	
-	public static Action createLineUpAction(
-			Clock clock,
-			SurroundingProvider surroundingProvider,
-			SwerveDrive drive, Orientation orientation,
-			Rotation2 desiredSurroundingRotation,
-			Action failAction, Action successAction, SoundMap soundMap){
-		return Actions.createLinkedActionRunner(
-				createLinkedLineUpAction(clock, surroundingProvider, drive, orientation, desiredSurroundingRotation, failAction, successAction, soundMap),
-				WhenDone.CLEAR_ACTIVE_AND_BE_DONE,
-				true
-		);
-	}
+    private LineUpCreator() { throw new UnsupportedOperationException(); }
 
-	/**
-	 *
-	 * @param clock The clock
-	 * @param surroundingProvider The surrounding provider
-	 * @param drive
-	 * @param orientation
-	 * @param desiredSurroundingRotation The orientation of the vision relative to the robot while lining up. AKA the offset corresponding to the side that will face the vision when lining up
-	 * @param failAction The fail action
-	 * @param successAction The success action
-	 * @return
-	 */
-	public static DistanceAwayLinkedAction createLinkedLineUpAction(
-			Clock clock,
-			SurroundingProvider surroundingProvider,
-			SwerveDrive drive, Orientation orientation,
-			Rotation2 desiredSurroundingRotation,
-			Action failAction, Action successAction, SoundMap soundMap){
-		return new StrafeLineUpAction(clock, surroundingProvider, new HighestValueSelector<>(surrounding -> -surrounding.getTransform().getPosition().distance2(Vector2.ZERO)), drive, orientation, desiredSurroundingRotation, .5, failAction, successAction, soundMap);
-	}
+    public static Action createLineUpAction(
+            Clock clock,
+            SurroundingProvider surroundingProvider,
+            SwerveDrive drive, Orientation orientation,
+            Rotation2 desiredSurroundingRotation,
+            Action failAction, Action successAction, SoundMap soundMap){
+        return Actions.createLinkedActionRunner(
+                createLinkedLineUpAction(clock, surroundingProvider, drive, orientation, desiredSurroundingRotation, failAction, successAction, soundMap),
+                WhenDone.CLEAR_ACTIVE_AND_BE_DONE,
+                true
+        );
+    }
+
+    /**
+     *
+     * @param clock The clock
+     * @param surroundingProvider The surrounding provider
+     * @param drive
+     * @param orientation
+     * @param desiredSurroundingRotation The orientation of the vision relative to the robot while lining up. AKA the offset corresponding to the side that will face the vision when lining up
+     * @param failAction The fail action
+     * @param successAction The success action
+     * @return
+     */
+    public static DistanceAwayLinkedAction createLinkedLineUpAction(
+            Clock clock,
+            SurroundingProvider surroundingProvider,
+            SwerveDrive drive, Orientation orientation,
+            Rotation2 desiredSurroundingRotation,
+            Action failAction, Action successAction, SoundMap soundMap){
+        return new StrafeLineUpAction(clock, surroundingProvider, new HighestValueSelector<>(surrounding -> -surrounding.getTransform().getPosition().distance2(Vector2.ZERO)), drive, orientation, desiredSurroundingRotation, .5, failAction, successAction, soundMap);
+    }
 }

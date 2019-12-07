@@ -10,25 +10,25 @@ import java.util.function.Supplier;
 import static java.util.Objects.requireNonNull;
 
 public class TimedCargoIntake extends TimedAction {
-	
-	private final CargoIntake cargoIntake;
-	private final double speed;
-	
-	public TimedCargoIntake(Clock clock, double lastSeconds, CargoIntake cargoIntake, double speed) {
-		super(true, clock, lastSeconds);
-		this.cargoIntake = requireNonNull(cargoIntake);
-		this.speed = speed;
-	}
-	
-	@Override
-	protected void onUpdate() {
-		super.onUpdate();
-		cargoIntake.setSpeed(speed);
-	}
-	
-	@Override
-	protected void onEnd(boolean peacefullyEnded) {
-		super.onEnd(peacefullyEnded);
-		cargoIntake.setSpeed(0);
-	}
+
+    private final CargoIntake cargoIntake;
+    private final double speed;
+
+    public TimedCargoIntake(Clock clock, double lastSeconds, CargoIntake cargoIntake, double speed) {
+        super(true, clock, lastSeconds);
+        this.cargoIntake = requireNonNull(cargoIntake);
+        this.speed = speed;
+    }
+
+    @Override
+    protected void onUpdate() {
+        super.onUpdate();
+        cargoIntake.setSpeed(speed);
+    }
+
+    @Override
+    protected void onEnd(boolean peacefullyEnded) {
+        super.onEnd(peacefullyEnded);
+        cargoIntake.setSpeed(0);
+    }
 }
