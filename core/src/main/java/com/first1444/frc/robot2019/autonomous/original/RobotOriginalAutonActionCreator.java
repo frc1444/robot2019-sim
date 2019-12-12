@@ -3,6 +3,7 @@ package com.first1444.frc.robot2019.autonomous.original;
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.autonomous.actions.*;
 import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
+import com.first1444.frc.robot2019.autonomous.creator.RobotVisionPlacementCreator;
 import com.first1444.frc.robot2019.autonomous.original.actions.GoStraight;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.subsystems.Lift;
@@ -16,13 +17,8 @@ import java.util.Map;
 
 import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
 
+@Deprecated
 public class RobotOriginalAutonActionCreator implements OriginalAutonActionCreator {
-    /** NOTE: This map does not contain {@link Lift.Position#CARGO_CARGO_SHIP} */
-    private static final Map<SlotLevel, Lift.Position> SLOT_MAP = Map.of(
-            SlotLevel.LEVEL1, Lift.Position.LEVEL1, // although SlotLevel.LEVEL1 may refer to the CARGO_CARGO_SHIP height, when we use this map, it is not for that
-            SlotLevel.LEVEL2, Lift.Position.LEVEL2,
-            SlotLevel.LEVEL3, Lift.Position.LEVEL3
-    );
     private final Robot robot;
 
     public RobotOriginalAutonActionCreator(Robot robot) {
@@ -71,13 +67,14 @@ public class RobotOriginalAutonActionCreator implements OriginalAutonActionCreat
 
     @Override
     public Action createRocketPlaceCargoUseVision(SlotLevel slotLevel, Action failAction, Action successAction) {
-        return createLineUpWithRunner(false, SLOT_MAP.get(slotLevel), failAction, successAction);
+        return createLineUpWithRunner(false, RobotVisionPlacementCreator.SLOT_MAP.get(slotLevel), failAction, successAction);
     }
 
     @Override
     public Action createRocketPlaceHatchUseVision(SlotLevel slotLevel, Action failAction, Action successAction) {
-        return createLineUpWithRunner(true, SLOT_MAP.get(slotLevel), failAction, successAction);
+        return createLineUpWithRunner(true, RobotVisionPlacementCreator.SLOT_MAP.get(slotLevel), failAction, successAction);
     }
+    @SuppressWarnings("DuplicatedCode")
     private Action createLineUpWithRunner(boolean hatch, Lift.Position liftPosition, Action failAction, Action successAction){
         final boolean[] success = {false};
         final boolean[] fail = {false};
@@ -165,6 +162,6 @@ public class RobotOriginalAutonActionCreator implements OriginalAutonActionCreat
 
     @Override
     public Action createRaiseLift(Lift.Position position) {
-        return new RaiseLift(robot::getLift, position);
+        return new RaiseLift(robot.getLift(), position);
     }
 }

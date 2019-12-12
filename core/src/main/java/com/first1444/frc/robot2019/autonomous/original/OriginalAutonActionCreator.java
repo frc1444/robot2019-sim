@@ -15,6 +15,7 @@ import me.retrodaredevil.action.WhenDone;
  * NOTE: For each failAction and successAction, they are allowed to be null and if they're an instanceof {@link LinkedAction},
  * they will be ran like a {@link LinkedAction}
  */
+@Deprecated
 public interface OriginalAutonActionCreator {
 
     Action createLogMessageAction(String message);

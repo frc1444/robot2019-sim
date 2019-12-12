@@ -39,6 +39,7 @@ public class AutonomousChooserState {
     private final AutonomousModeCreator autonomousModeCreator;
     private final RobotInput robotInput;
 
+    @SuppressWarnings("UnusedAssignment") // this is used in the constructor and it's initialization to false is necessary
     private boolean readyToListen = false;
     private final MutableMappedChooserProvider<AutonomousType> autonomousChooser;
     private final MutableMappedChooserProvider<StartingPosition> startingPositionChooser;

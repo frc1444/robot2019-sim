@@ -3,30 +3,28 @@ package com.first1444.frc.robot2019.autonomous.actions;
 import com.first1444.frc.robot2019.subsystems.Lift;
 import me.retrodaredevil.action.SimpleAction;
 
-import java.util.Objects;
-import java.util.function.Supplier;
+import static java.util.Objects.requireNonNull;
 
 public class RaiseLift extends SimpleAction {
-    private final Supplier<Lift> liftSupplier;
+    private final Lift lift;
     private final Double position;
     private final Lift.Position liftPosition;
-    public RaiseLift(Supplier<Lift> liftSupplier, double position) {
+    public RaiseLift(Lift lift, double position) {
         super(true);
-        this.liftSupplier = liftSupplier;
+        this.lift = requireNonNull(lift);
         this.position = position;
         this.liftPosition = null;
     }
-    public RaiseLift(Supplier<Lift> liftSupplier, Lift.Position liftPosition) {
+    public RaiseLift(Lift lift, Lift.Position liftPosition) {
         super(true);
-        this.liftSupplier = Objects.requireNonNull(liftSupplier);
+        this.lift = requireNonNull(lift);
         this.position = null;
-        this.liftPosition = Objects.requireNonNull(liftPosition);
+        this.liftPosition = requireNonNull(liftPosition);
     }
 
     @Override
     protected void onUpdate() {
         super.onUpdate();
-        final Lift lift = liftSupplier.get();
         if(position != null){
             lift.setDesiredPosition(position);
         } else if(liftPosition != null){

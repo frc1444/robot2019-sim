@@ -2,6 +2,7 @@ package com.first1444.frc.robot2019.autonomous.actions;
 
 import com.first1444.frc.robot2019.subsystems.HatchIntake;
 import me.retrodaredevil.action.Action;
+import me.retrodaredevil.action.Actions;
 import me.retrodaredevil.action.SimpleAction;
 
 import java.util.Objects;
@@ -16,11 +17,19 @@ public class HatchPositionAction extends SimpleAction {
         this.hatchIntakeSupplier = hatchIntakeSupplier;
         this.hatchIntakeAction = hatchIntakeAction;
     }
+    @Deprecated
     public static Action createReady(Supplier<HatchIntake> hatchIntakeSupplier){
         return new HatchPositionAction(hatchIntakeSupplier, HatchIntake::readyPosition);
     }
+    @Deprecated
     public static Action createStow(Supplier<HatchIntake> hatchIntakeSupplier){
         return new HatchPositionAction(hatchIntakeSupplier, HatchIntake::stowedPosition);
+    }
+    public static Action createReady(HatchIntake hatchIntake){
+        return Actions.createRunOnce(hatchIntake::readyPosition);
+    }
+    public static Action createStow(HatchIntake hatchIntake){
+        return Actions.createRunOnce(hatchIntake::stowedPosition);
     }
 
     @Override

@@ -19,6 +19,7 @@ import me.retrodaredevil.action.Actions;
 import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
 import static java.util.Objects.requireNonNull;
 
+@Deprecated
 public class OriginalAutonomousModeCreator implements AutonomousModeCreator {
     private static final Rotation2 SIDE_CARGO_SHIP_LONG_DISTANCE_ANGLE = Rotation2.fromDegrees(4.5);
     private final OriginalAutonActionCreator actionCreator;
