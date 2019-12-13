@@ -19,7 +19,6 @@ import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
 import com.first1444.frc.robot2019.autonomous.original.OriginalAutonomousModeCreator;
 import com.first1444.frc.robot2019.autonomous.original.RobotOriginalAutonActionCreator;
 import com.first1444.frc.robot2019.autonomous.actions.TimedCargoIntake;
-import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
 import com.first1444.frc.robot2019.input.RobotInput;
@@ -29,7 +28,6 @@ import com.first1444.frc.robot2019.subsystems.*;
 import com.first1444.frc.robot2019.subsystems.implementations.DefaultTaskSystem;
 import com.first1444.frc.robot2019.vision.VisionPacketListener;
 import com.first1444.sim.api.Clock;
-import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.distance.*;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
@@ -103,15 +101,14 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final SoundMap soundMap;
 
     /** An {@link Action} that updates certain subsystems only when the robot is enabled*/
-    private final ActionMultiplexer enabledSubsystemUpdater;
+    private final Action enabledSubsystemUpdater;
     /** An {@link Action} that updates certain subsystems all the time. If {@link #enabledSubsystemUpdater} is updated, this is updated after that*/
-    private final ActionMultiplexer constantSubsystemUpdater;
+    private final Action constantSubsystemUpdater;
     /** The {@link ActionChooser} that handles an action that updates subsystems*/
     private final ActionChooser actionChooser;
 
     private final Action teleopAction;
     private final SwerveDriveAction swerveDriveAction;
-//    private final Action testAction;
     private final AutonomousChooserState autonomousChooserState;
 
     // region Initialize
@@ -120,7 +117,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
             FrcDriverStation driverStation,
             FrcLogger logger,
             Clock clock,
-            ShuffleboardMap shuffleboardMap,
+            DashboardMap dashboardMap,
             StandardControllerInput controller, ControllerPartCreator port1, ControllerPartCreator port2, ControllerRumble rumble,
             SoundCreator soundCreator,
             OrientationHandler rawOrientationHandler,
@@ -139,17 +136,17 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         this.surroundingProvider = surroundingProvider;
 
         robotInput = new DefaultRobotInput(
-                controller,
-                InputUtil.createJoystick(port1),
-                InputUtil.createAttackJoystick(port2),
-                rumble
+            controller,
+            InputUtil.createJoystick(port1),
+            InputUtil.createAttackJoystick(port2),
+            rumble
         );
         partUpdater.addPartAssertNotPresent(robotInput);
         partUpdater.updateParts(controlConfig); // update this so when calling get methods don't throw exceptions
 
         soundMap = new DefaultSoundMap(soundCreator);
 
-        orientationSystem = new OrientationSystem(shuffleboardMap, rawOrientationHandler, robotInput);
+        orientationSystem = new OrientationSystem(dashboardMap, rawOrientationHandler, robotInput);
 
         this.drive = new FourWheelSwerveDrive(fourWheelSwerveData);
         final DefaultTaskSystem defaultTaskSystem = new DefaultTaskSystem(robotInput);
@@ -163,7 +160,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                 "FLIPPED", true
         );
         cameraIDSwitchedChooser.set(cameraIDSwitchedMap, "NOT FLIPPED");
-        shuffleboardMap.getDevTab().add("Camera IDs Flipped", new SendableComponent<>(new ChooserSendable(cameraIDSwitchedChooser)));
+        dashboardMap.getDevTab().add("Camera IDs Flipped", new SendableComponent<>(new ChooserSendable(cameraIDSwitchedChooser)));
         dimensions = new DynamicRobotDimensions(Constants.Dimensions.INSTANCE, cameraIDSwitchedChooser::getSelected);
 
         relativeDistanceAccumulator = new DeltaDistanceAccumulator(new OrientationDeltaDistanceCalculator(new SwerveDeltaDistanceCalculator(fourWheelSwerveData), orientationSystem.getOrientation()));
@@ -171,53 +168,52 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
         autonomousPerspectiveChooser = new SimpleMappedChooserProvider<>();
         Map<String, Perspective> autonomousPerspectiveMap = new HashMap<>(Map.of(
-                "Hatch Cam", dimensions.getHatchManipulatorPerspective(),
-                "Cargo Cam", dimensions.getCargoManipulatorPerspective(),
-                "Driver Station (blind field centric)", Perspective.DRIVER_STATION,
-                "Jumbotron on Right", Perspective.JUMBOTRON_ON_RIGHT,
-                "Jumbotron on Left", Perspective.JUMBOTRON_ON_LEFT
+            "Hatch Cam", dimensions.getHatchManipulatorPerspective(),
+            "Cargo Cam", dimensions.getCargoManipulatorPerspective(),
+            "Driver Station (blind field centric)", Perspective.DRIVER_STATION,
+            "Jumbotron on Right", Perspective.JUMBOTRON_ON_RIGHT,
+            "Jumbotron on Left", Perspective.JUMBOTRON_ON_LEFT
         ));
         autonomousPerspectiveMap.put("Auto Cam", null);
         autonomousPerspectiveChooser.set(autonomousPerspectiveMap, "Auto Cam");
-        shuffleboardMap.getUserTab().add("Autonomous Perspective", new SendableComponent<>(new ChooserSendable(autonomousPerspectiveChooser)), (metadata) -> new ComponentMetadataHelper(metadata)
-                .setSize(2, 1)
-                .setPosition(9, 4));
+        dashboardMap.getUserTab().add("Autonomous Perspective", new SendableComponent<>(new ChooserSendable(autonomousPerspectiveChooser)), (metadata) -> new ComponentMetadataHelper(metadata)
+            .setSize(2, 1)
+            .setPosition(9, 4));
 
         visionPacketListener = new VisionPacketListener(
-                clock,
-                Map.of(
-                        dimensions.getHatchCameraID(), dimensions.getHatchManipulatorPerspective().getOffset(),
-                        dimensions.getCargoCameraID(), dimensions.getCargoManipulatorPerspective().getOffset()
-                ),
-                "10.14.44.5", 5801
+            clock,
+            Map.of(
+                dimensions.getHatchCameraID(), dimensions.getHatchManipulatorPerspective().getOffset(),
+                dimensions.getCargoCameraID(), dimensions.getCargoManipulatorPerspective().getOffset()
+            ),
+            "10.14.44.5", 5801
         );
 
         enabledSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
-                lift, cargoIntake, climber, hatchIntake
+            lift, cargoIntake, climber, hatchIntake
         ).clearAllOnEnd(false).canRecycle(true).build();
 
         constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder( // NOTE, without forceUpdateInOrder(true), these will not update in order
-                Actions.createRunForeverRecyclable(drive),
-                Actions.createRunForeverRecyclable(relativeDistanceAccumulator),
-                orientationSystem,
-                defaultTaskSystem,
-                Actions.createRunForever(defaultMatchScheduler),
-                new SwerveCalibrateAction(drive, robotInput),
-                extraAction
+            Actions.createRunForeverRecyclable(drive),
+            Actions.createRunForeverRecyclable(relativeDistanceAccumulator),
+            orientationSystem,
+            defaultTaskSystem,
+            Actions.createRunForever(defaultMatchScheduler),
+            new SwerveCalibrateAction(drive, robotInput),
+            extraAction
         ).clearAllOnEnd(false).canRecycle(false).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
 
         swerveDriveAction = new SwerveDriveAction(clock, drive, getOrientation(), taskSystem, robotInput, surroundingProvider, getDimensions());
         teleopAction = new Actions.ActionMultiplexerBuilder(
-                swerveDriveAction,
-                new OperatorAction(this, robotInput)
+            swerveDriveAction,
+            new OperatorAction(this, robotInput)
         ).clearAllOnEnd(false).canBeDone(false).canRecycle(true).build();
-//        testAction = new TestAction(robotInput);
         autonomousChooserState = new AutonomousChooserState(
-                shuffleboardMap,  // this will add stuff to the dashboard
-                clock,
-                new OriginalAutonomousModeCreator(new RobotOriginalAutonActionCreator(this), dimensions),
-                robotInput
+            dashboardMap,  // this will add stuff to the dashboard
+            clock,
+            new OriginalAutonomousModeCreator(new RobotOriginalAutonActionCreator(this), dimensions),
+            robotInput
         );
 
         visionPacketListener.start();
@@ -295,10 +291,10 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     @Override
     public void autonomousInit() {
         actionChooser.setNextAction(
-                new Actions.ActionQueueBuilder(
-                        autonomousChooserState.createAutonomousAction(orientationSystem.getOrientation().getOrientation()),
-                        teleopAction
-                ) .immediatelyDoNextWhenDone(true) .canBeDone(false) .canRecycle(false) .build()
+            new Actions.ActionQueueBuilder(
+                autonomousChooserState.createAutonomousAction(orientationSystem.getOrientation().getOrientation()),
+                teleopAction
+            ) .immediatelyDoNextWhenDone(true) .canBeDone(false) .canRecycle(false) .build()
         );
         final Perspective autoPerspective = autonomousPerspectiveChooser.getSelected();
         if(autoPerspective == dimensions.getHatchManipulatorPerspective()){
@@ -322,20 +318,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
     @Override
     public void testInit() {
-//        actionChooser.setNextAction(testAction);
-        actionChooser.setNextAction(new Actions.ActionQueueBuilder(
-//                new TurnToOrientation(-90, this::getDrive, this::getOrientation),
-//                new GoStraight(10, .2, 0, 1, 90.0, this::getDrive, this::getOrientation),
-                LineUpCreator.createLineUpAction(
-                        clock,
-                        surroundingProvider,
-                        drive, getOrientation(),
-                        Rotation2.ZERO,
-                        Actions.createRunOnce(() -> System.out.println("Failed!")), Actions.createRunOnce(() -> System.out.println("Success!")),
-                        soundMap
-                ),
-                Actions.createRunOnce(() -> robotInput.getDriverRumble().rumbleTime(500, .2))
-        ).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build());
     }
     // endregion
 

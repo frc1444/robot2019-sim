@@ -8,9 +8,8 @@ import com.badlogic.gdx.physics.box2d.FixtureDef
 import com.badlogic.gdx.physics.box2d.PolygonShape
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef
 import com.first1444.dashboard.bundle.DefaultDashboardBundle
-import com.first1444.dashboard.shuffleboard.implementations.DefaultShuffleboard
 import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard
-import com.first1444.frc.robot2019.DefaultShuffleboardMap
+import com.first1444.frc.robot2019.DefaultDashboardMap
 import com.first1444.frc.robot2019.Robot
 import com.first1444.frc.robot2019.input.InputUtil
 import com.first1444.frc.robot2019.input.LinuxPS4StandardControllerInputCreator
@@ -141,7 +140,7 @@ object MyRobotCreator : RobotCreator {
             networkTable.startServer()
             val bundle = DefaultDashboardBundle(NetworkTableInstanceBasicDashboard(networkTable))
             val driverStationActiveComponent = DriverStationSendable(data.driverStation).init("FMSInfo", bundle.rootDashboard.getSubDashboard("FMSInfo"))
-            val shuffleboardMap = DefaultShuffleboardMap(bundle.shuffleboard)
+            val shuffleboardMap = DefaultDashboardMap(bundle)
             val reportMap = DashboardReportMap(shuffleboardMap.debugTab.rawDashboard.getSubDashboard("Report Map"))
             val robotRunnable = BasicRobotRunnable(AdvancedIterativeRobotBasicRobot(Robot(
                     data.driverStation, PrintStreamFrcLogger(System.err, System.err), updateableData.clock,

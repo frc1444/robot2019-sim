@@ -4,19 +4,23 @@ import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.*;
-import com.first1444.dashboard.shuffleboard.ShuffleboardContainer;
+import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.first1444.dashboard.ActiveComponentMultiplexer;
+import com.first1444.dashboard.bundle.DashboardBundle;
+import com.first1444.dashboard.value.BasicValue;
+import com.first1444.dashboard.value.ValueProperty;
+import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
 import com.first1444.frc.robot2019.subsystems.swerve.ModuleConfig;
 import com.first1444.frc.robot2019.subsystems.swerve.SwerveModuleEvent;
-import com.first1444.sim.api.MathUtil;
 import com.first1444.frc.util.pid.PidKey;
 import com.first1444.frc.util.valuemap.MutableValueMap;
 import com.first1444.frc.util.valuemap.ValueMap;
+import com.first1444.sim.api.MathUtil;
 import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.drivetrain.swerve.SwerveModule;
 import com.first1444.sim.api.event.Event;
 import com.first1444.sim.api.event.EventHandler;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +29,8 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
-import static java.lang.Math.*;
+import static java.lang.Math.toDegrees;
+import static java.lang.Math.toRadians;
 
 public class TalonSwerveModule implements SwerveModule {
     private static final int CLOSED_LOOP_TIME = 4;
@@ -44,10 +49,9 @@ public class TalonSwerveModule implements SwerveModule {
     private double targetPositionDegrees = 0;
 
     public TalonSwerveModule(
-            String name, int driveID, int steerID, int quadCountsPerRevolution,
-            MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid,
-            MutableValueMap<ModuleConfig> moduleConfig, ShuffleboardContainer debugTab) {
-        // TODO Instead of using debugTab, we will use a LiveWindow so it can be enabled and disabled.
+        String name, int driveID, int steerID, int quadCountsPerRevolution,
+        MutableValueMap<PidKey> drivePid, MutableValueMap<PidKey> steerPid,
+        MutableValueMap<ModuleConfig> moduleConfig, DashboardMap dashboardMap) {
         this.name = name;
         this.quadCountsPerRevolution = quadCountsPerRevolution;
 
@@ -77,7 +81,9 @@ public class TalonSwerveModule implements SwerveModule {
             updateEncoderOffset(moduleConfig);
         });
         updateEncoderOffset(moduleConfig);
-
+        dashboardMap.getLiveWindow().add(name, (title, dashboard) -> new ActiveComponentMultiplexer(title, Collections.singletonList(
+            new PropertyActiveComponent("", dashboard.get("raw analog encoder"), ValueProperty.createGetOnly(() -> BasicValue.makeDouble(steer.getSensorCollection().getAnalogInRaw())))
+        )));
     }
     private void updateEncoderOffset(ValueMap<ModuleConfig> config){
         final int min = (int) config.getDouble(ModuleConfig.MIN_ENCODER_VALUE);
@@ -93,7 +99,6 @@ public class TalonSwerveModule implements SwerveModule {
 
     @Override
     public void run() {
-        SmartDashboard.putNumber("encoder " + name, steer.getSensorCollection().getAnalogInRaw()); // TODO use abstract-dashboard for this
         final double speedMultiplier;
 
         { // steer code

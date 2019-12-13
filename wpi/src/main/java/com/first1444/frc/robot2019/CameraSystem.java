@@ -12,8 +12,9 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.RobotBase;
 import me.retrodaredevil.action.SimpleAction;
 
-import java.util.Objects;
 import java.util.function.Supplier;
+
+import static java.util.Objects.requireNonNull;
 
 public class CameraSystem extends SimpleAction {
     private static final VideoMode VIDEO_MODE = new VideoMode(VideoMode.PixelFormat.kMJPEG, 280, 210, 11);
@@ -26,10 +27,10 @@ public class CameraSystem extends SimpleAction {
     private TaskSystem.Task lastTask = null;
 
     /**
-     * @param shuffleboardMap The shuffleboard map to add the camera to
+     * @param dashboardMap The shuffleboard map to add the camera to
      * @param taskSystemSupplier The supplier for the {@link TaskSystem}. This will not be called by the constructor
      */
-    public CameraSystem(ShuffleboardMap shuffleboardMap, Supplier<TaskSystem> taskSystemSupplier) {
+    public CameraSystem(DashboardMap dashboardMap, Supplier<TaskSystem> taskSystemSupplier) {
         super(false);
         this.taskSystemSupplier = taskSystemSupplier;
 
@@ -51,8 +52,8 @@ public class CameraSystem extends SimpleAction {
             videoSink.setCompression(COMPRESSION_LEVEL);
             videoSink.setDefaultCompression(COMPRESSION_LEVEL);
         }
-        shuffleboardMap.getUserTab().add("My Toggle Camera", new SendableComponent<>(new VideoSourceSendable("camera_server://" + source.getName())),
-                (metadata) -> new ComponentMetadataHelper(metadata).setSize(7, 5).setPosition(2, 0));
+        dashboardMap.getUserTab().add("My Toggle Camera", new SendableComponent<>(new VideoSourceSendable("camera_server://" + source.getName())),
+            (metadata) -> new ComponentMetadataHelper(metadata).setSize(7, 5).setPosition(2, 0));
     }
     private void setupCamera(UsbCamera camera){
         camera.setConnectVerbose(0); // so it doesn't spam the console with annoying messages if it's disconnected
@@ -70,21 +71,18 @@ public class CameraSystem extends SimpleAction {
     protected void onUpdate() {
         super.onUpdate();
         final TaskSystem taskSystem = taskSystemSupplier.get();
-        Objects.requireNonNull(taskSystem);
+        requireNonNull(taskSystem);
         final TaskSystem.Task newTask = taskSystem.getCurrentTask();
-//        SmartDashboard.putString("current task from camera system", newTask.toString());
         if(newTask != lastTask){
             lastTask = newTask;
             if(newTask == TaskSystem.Task.CARGO){
                 if(cargo.isValid()) {
                     videoSink.setSource(cargo);
                 }
-//                System.out.println("Source is now cargo. Is connected: " + (cargo == null ? "null" : cargo.isConnected()));
             } else if(newTask == TaskSystem.Task.HATCH){
                 if(hatch.isValid()) {
                     videoSink.setSource(hatch);
                 }
-//                System.out.println("Source is now hatch. Is connected: " + (hatch == null ? "null" : hatch.isConnected()));
             } else {
                 throw new UnsupportedOperationException("Unsupported task: " + newTask);
             }

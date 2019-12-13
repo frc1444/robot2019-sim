@@ -3,12 +3,7 @@ package com.first1444.frc.robot2019;
 import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
-import com.first1444.frc.robot2019.Constants;
 import com.first1444.frc.robot2019.subsystems.CargoIntake;
-import edu.wpi.first.wpilibj.Counter;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import me.retrodaredevil.action.SimpleAction;
 
 public class MotorCargoIntake extends SimpleAction implements CargoIntake {
@@ -20,7 +15,6 @@ public class MotorCargoIntake extends SimpleAction implements CargoIntake {
 
     private final BaseMotorController intake;
     private final TalonSRX pivot;
-    private long lastForwardLimit = 0;
 
     private double intakeSpeed;
     private Preset preset = Preset.STOW;
@@ -51,18 +45,12 @@ public class MotorCargoIntake extends SimpleAction implements CargoIntake {
         intakeSpeed = 0;
 
         final boolean forwardLimitSwitch = !pivot.getSensorCollection().isFwdLimitSwitchClosed(); // normally closed
-        final long now = System.currentTimeMillis();
-        if(forwardLimitSwitch){
-            lastForwardLimit = now;
-        }
-//        final boolean forwardLimit = forwardLimitSwitch || lastForwardLimit + 2000 > now; // limit switch pressed within 2 second
-        final boolean forwardLimit = forwardLimitSwitch;
         switch (preset){
             case STOW:
                 pivot.set(ControlMode.PercentOutput, STOW_SPEED); // rely on the limit switch
                 break;
             case PICKUP:
-                if(forwardLimit){
+                if(forwardLimitSwitch){
                     pivot.set(ControlMode.Disabled, 0);
                     preset = Preset.NEUTRAL;
                 } else {

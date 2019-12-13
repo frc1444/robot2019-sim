@@ -8,14 +8,12 @@ import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.shuffleboard.ShuffleboardContainer;
 import com.first1444.dashboard.shuffleboard.implementations.ShuffleboardLayoutComponent;
 import com.first1444.frc.robot2019.Constants;
-import com.first1444.frc.robot2019.ShuffleboardMap;
-import com.first1444.frc.robot2019.autonomous.AutonConfig;
+import com.first1444.frc.robot2019.DashboardMap;
 import com.first1444.frc.robot2019.autonomous.actions.AutonomousInputWaitAction;
 import com.first1444.frc.robot2019.autonomous.options.AfterComplete;
 import com.first1444.frc.robot2019.autonomous.options.AutonomousType;
 import com.first1444.frc.robot2019.autonomous.options.LineUpType;
 import com.first1444.frc.robot2019.autonomous.options.StartingPosition;
-import com.first1444.frc.robot2019.autonomous.original.OriginalAutonomousModeCreator;
 import com.first1444.frc.robot2019.deepspace.GamePieceType;
 import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.input.RobotInput;
@@ -49,11 +47,11 @@ public class AutonomousChooserState {
     private final MutableMappedChooserProvider<AfterComplete> afterCompleteChooser;
     private final ValueMap<AutonConfig> autonConfig;
 
-    public AutonomousChooserState(ShuffleboardMap shuffleboardMap, Clock clock, AutonomousModeCreator autonomousModeCreator, RobotInput robotInput){
+    public AutonomousChooserState(DashboardMap dashboardMap, Clock clock, AutonomousModeCreator autonomousModeCreator, RobotInput robotInput){
         this.clock = clock;
         this.autonomousModeCreator = autonomousModeCreator;
         this.robotInput = robotInput;
-        final ShuffleboardContainer layout = shuffleboardMap.getUserTab()
+        final ShuffleboardContainer layout = dashboardMap.getUserTab()
                 .add("Autonomous", ShuffleboardLayoutComponent.LIST, (metadata) -> new ComponentMetadataHelper(metadata)
                         .setSize(2, 5)
                         .setPosition(0, 0));

@@ -3,7 +3,7 @@ package com.first1444.frc.robot2019.subsystems;
 import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
 import com.first1444.dashboard.shuffleboard.SendableComponent;
 import com.first1444.dashboard.shuffleboard.implementations.GyroMetadataHelper;
-import com.first1444.frc.robot2019.ShuffleboardMap;
+import com.first1444.frc.robot2019.DashboardMap;
 import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.sim.api.sensors.*;
 import me.retrodaredevil.action.SimpleAction;
@@ -15,14 +15,14 @@ public class OrientationSystem extends SimpleAction {
     private final RobotInput robotInput;
     private final OrientationHandler orientationHandler;
     private final MutableOrientation orientation;
-    public OrientationSystem(ShuffleboardMap shuffleboardMap, OrientationHandler orientationHandler, RobotInput robotInput) {
+    public OrientationSystem(DashboardMap dashboardMap, OrientationHandler orientationHandler, RobotInput robotInput) {
         super(false);
-        requireNonNull(shuffleboardMap);
+        requireNonNull(dashboardMap);
         this.orientationHandler = requireNonNull(orientationHandler);
         this.orientation = new DefaultMutableOrientation(orientationHandler.getOrientation());
         this.robotInput = requireNonNull(robotInput);
 
-        shuffleboardMap.getUserTab().add("Orientation",
+        dashboardMap.getUserTab().add("Orientation",
                 new SendableComponent<>(new OrientationSendable(orientation)),
                 (metadata) -> {
                     new ComponentMetadataHelper(metadata).setSize(2, 3).setPosition(9, 1);
