@@ -1,8 +1,10 @@
 package com.first1444.frc.robot2019.autonomous.original;
 
-import com.first1444.frc.robot2019.deepspace.SlotLevel;
-import com.first1444.frc.robot2019.subsystems.Lift;
-import com.first1444.sim.api.Rotation2;
+import com.first1444.frc.robot2019.autonomous.creator.OperatorActionCreator;
+import com.first1444.frc.robot2019.autonomous.creator.VisionPlacementCreator;
+import com.first1444.frc.util.autonomous.creator.LogActionCreator;
+import com.first1444.frc.util.autonomous.creator.OriginalSwerveDriveActionCreator;
+import com.first1444.frc.util.autonomous.creator.SwerveDriveActionCreator;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.LinkedAction;
 import me.retrodaredevil.action.WhenDone;
@@ -17,36 +19,8 @@ import me.retrodaredevil.action.WhenDone;
  */
 @Deprecated
 public interface OriginalAutonActionCreator {
-
-    Action createLogMessageAction(String message);
-    Action createLogWarningAction(String message);
-    Action createLogErrorAction(String message);
-
-    Action createTurnToOrientation(Rotation2 desiredOrientation);
-    @Deprecated
-    Action createGoStraight(double distanceMeters, double speed, Rotation2 angle);
-    Action createGoStraight(double distanceMeters, double speed, Rotation2 angle, Rotation2 faceDirection);
-
-    Action createCargoShipPlaceHatchUseVision(Action failAction, Action successAction);
-    Action createCargoShipPlaceCargoUseVision(Action failAction, Action successAction);
-
-    Action createRocketPlaceHatchUseVision(SlotLevel slotLevel, Action failAction, Action successAction);
-    Action createRocketPlaceCargoUseVision(SlotLevel slotLevel, Action failAction, Action successAction);
-
-    /**
-     * @return An action that is will be done once the hatch intake is in the ready position
-     */
-    Action createExtendHatch();
-    Action createStowHatch();
-
-    Action createDropHatch();
-    Action createGrabHatch();
-
-    Action createReleaseCargo();
-
-    /**
-     * @param position The desired position
-     * @return Creates an action that's done when the lift has reached the desired position
-     */
-    Action createRaiseLift(Lift.Position position);
+    LogActionCreator getLogCreator();
+    OriginalSwerveDriveActionCreator getDriveCreator();
+    OperatorActionCreator getOperatorCreator();
+    VisionPlacementCreator getVisionCreator();
 }

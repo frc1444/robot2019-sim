@@ -40,6 +40,8 @@ subprojects {
     }
     dependencies {
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        testImplementation "org.junit.jupiter:junit-jupiter-engine:$junit5Version"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5Version"
     }
     test {
         useJUnitPlatform()
