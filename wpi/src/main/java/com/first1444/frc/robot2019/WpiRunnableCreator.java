@@ -65,17 +65,17 @@ public class WpiRunnableCreator implements RunnableCreator {
         final SwerveSetup swerve = Constants.Swerve2019.INSTANCE;
         final int quadCounts = swerve.getQuadCountsPerRevolution();
         FourWheelSwerveDriveData data = new FourWheelSwerveDriveData(
-                            new TalonSwerveModule("front right", swerve.getFRDriveCAN(), swerve.getFRSteerCAN(), quadCounts, drivePid, steerPid,
-                                    swerve.setupFR(createModuleConfig(dashboardMap, "front right module")), dashboardMap),
+                new TalonSwerveModule("front right", swerve.getFRDriveCAN(), swerve.getFRSteerCAN(), quadCounts, drivePid, steerPid,
+                        swerve.setupFR(createModuleConfig(dashboardMap, "front right module")), dashboardMap),
 
-                            new TalonSwerveModule("front left", swerve.getFLDriveCAN(), swerve.getFLSteerCAN(), quadCounts, drivePid, steerPid,
-                                    swerve.setupFL(createModuleConfig(dashboardMap, "front left module")), dashboardMap),
+                new TalonSwerveModule("front left", swerve.getFLDriveCAN(), swerve.getFLSteerCAN(), quadCounts, drivePid, steerPid,
+                        swerve.setupFL(createModuleConfig(dashboardMap, "front left module")), dashboardMap),
 
-                            new TalonSwerveModule("rear left", swerve.getRLDriveCAN(), swerve.getRLSteerCAN(), quadCounts, drivePid, steerPid,
-                                    swerve.setupRL(createModuleConfig(dashboardMap, "rear left module")), dashboardMap),
+                new TalonSwerveModule("rear left", swerve.getRLDriveCAN(), swerve.getRLSteerCAN(), quadCounts, drivePid, steerPid,
+                        swerve.setupRL(createModuleConfig(dashboardMap, "rear left module")), dashboardMap),
 
-                            new TalonSwerveModule("rear right", swerve.getRRDriveCAN(), swerve.getRRSteerCAN(), quadCounts, drivePid, steerPid,
-                                    swerve.setupRR(createModuleConfig(dashboardMap, "rear right module")), dashboardMap),
+                new TalonSwerveModule("rear right", swerve.getRRDriveCAN(), swerve.getRRSteerCAN(), quadCounts, drivePid, steerPid,
+                        swerve.setupRR(createModuleConfig(dashboardMap, "rear right module")), dashboardMap),
                 swerve.getWheelBase(), swerve.getTrackWidth()
         );
         final var lift = new MotorLift();
@@ -87,28 +87,28 @@ public class WpiRunnableCreator implements RunnableCreator {
 
         final Robot[] robotReference = {null};
         Robot robot = new Robot(
-            driverStation, DriverStationLogger.INSTANCE, new WpiClock(), dashboardMap,
-            InputUtil.createPS4Controller(new WpiInputCreator(0)), new WpiInputCreator(1), new WpiInputCreator(2), new DualShockRumble(new WpiInputCreator(5).createRumble()),
-            DummySoundCreator.INSTANCE, // TODO sounds
-            new BNOOrientationHandler(gyro),
-            data, lift, cargoIntake, hatchIntake, climber,
-            Collections::emptyList, // TODO vision
-            new CameraSystem(dashboardMap, () -> robotReference[0].getTaskSystem())
+                driverStation, DriverStationLogger.INSTANCE, new WpiClock(), dashboardMap,
+                InputUtil.createPS4Controller(new WpiInputCreator(0)), new WpiInputCreator(1), new WpiInputCreator(2), new DualShockRumble(new WpiInputCreator(5).createRumble()),
+                DummySoundCreator.INSTANCE, // TODO sounds
+                new BNOOrientationHandler(gyro),
+                data, lift, cargoIntake, hatchIntake, climber,
+                Collections::emptyList, // TODO vision
+                new CameraSystem(dashboardMap, () -> robotReference[0].getTaskSystem())
         );
         robotReference[0] = robot;
         return new RobotRunnableMultiplexer(Arrays.asList(
-            new BasicRobotRunnable(new AdvancedIterativeRobotBasicRobot(robot), driverStation),
-            new RobotRunnable() {
-                @Override
-                public void run() {
-                    bundle.update();
-                }
+                new BasicRobotRunnable(new AdvancedIterativeRobotBasicRobot(robot), driverStation),
+                new RobotRunnable() {
+                    @Override
+                    public void run() {
+                        bundle.update();
+                    }
 
-                @Override
-                public void close() {
-                    bundle.onRemove();
+                    @Override
+                    public void close() {
+                        bundle.onRemove();
+                    }
                 }
-            }
         ));
     }
     private MutableValueMap<ModuleConfig> createModuleConfig(DashboardMap dashboardMap, String name){

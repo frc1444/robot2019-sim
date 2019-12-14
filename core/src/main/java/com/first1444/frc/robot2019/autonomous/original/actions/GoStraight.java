@@ -24,7 +24,7 @@ public class GoStraight extends SimpleAction {
 
 
     private GoStraight(
-            double distanceMeters, Vector2 translate, Rotation2 faceDirection,
+            double distanceMeters, Vector2 translate, @Nullable Rotation2 faceDirection,
             SwerveDrive drive, Orientation orientation
     ) {
         super(true);

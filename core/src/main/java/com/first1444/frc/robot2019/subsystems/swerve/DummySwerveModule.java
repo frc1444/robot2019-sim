@@ -31,11 +31,13 @@ public class DummySwerveModule implements SwerveModule {
         return 0;
     }
 
+    @NotNull
     @Override
     public EventHandler getEventHandler() {
         throw new UnsupportedOperationException();
     }
 
+    @NotNull
     @Override
     public String getName() {
         return "dummy";

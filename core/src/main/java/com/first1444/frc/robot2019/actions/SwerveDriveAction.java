@@ -141,6 +141,7 @@ public class SwerveDriveAction extends SimpleAction {
             if(perspective.isUseGyro()){
                 translation = new Vector2(x, y).rotateRadians(offsetRadians - orientationRadians);
             } else {
+                //noinspection SuspiciousNameCombination
                 translation = new Vector2(y, -x).rotateRadians(offsetRadians);
             }
 

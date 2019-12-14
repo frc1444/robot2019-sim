@@ -104,8 +104,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final Action enabledSubsystemUpdater;
     /** An {@link Action} that updates certain subsystems all the time. If {@link #enabledSubsystemUpdater} is updated, this is updated after that*/
     private final Action constantSubsystemUpdater;
-    /** The {@link ActionChooser} that handles an action that updates subsystems*/
+    /** The {@link ActionChooser} that handles an action that updates subsystems. (One action is active)*/
     private final ActionChooser actionChooser;
+    private final ActionMultiplexer dynamicUpdater;
 
     private final Action teleopAction;
     private final SwerveDriveAction swerveDriveAction;
@@ -136,10 +137,10 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         this.surroundingProvider = surroundingProvider;
 
         robotInput = new DefaultRobotInput(
-            controller,
-            InputUtil.createJoystick(port1),
-            InputUtil.createAttackJoystick(port2),
-            rumble
+                controller,
+                InputUtil.createJoystick(port1),
+                InputUtil.createAttackJoystick(port2),
+                rumble
         );
         partUpdater.addPartAssertNotPresent(robotInput);
         partUpdater.updateParts(controlConfig); // update this so when calling get methods don't throw exceptions
@@ -168,52 +169,53 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
         autonomousPerspectiveChooser = new SimpleMappedChooserProvider<>();
         Map<String, Perspective> autonomousPerspectiveMap = new HashMap<>(Map.of(
-            "Hatch Cam", dimensions.getHatchManipulatorPerspective(),
-            "Cargo Cam", dimensions.getCargoManipulatorPerspective(),
-            "Driver Station (blind field centric)", Perspective.DRIVER_STATION,
-            "Jumbotron on Right", Perspective.JUMBOTRON_ON_RIGHT,
-            "Jumbotron on Left", Perspective.JUMBOTRON_ON_LEFT
+                "Hatch Cam", dimensions.getHatchManipulatorPerspective(),
+                "Cargo Cam", dimensions.getCargoManipulatorPerspective(),
+                "Driver Station (blind field centric)", Perspective.DRIVER_STATION,
+                "Jumbotron on Right", Perspective.JUMBOTRON_ON_RIGHT,
+                "Jumbotron on Left", Perspective.JUMBOTRON_ON_LEFT
         ));
         autonomousPerspectiveMap.put("Auto Cam", null);
         autonomousPerspectiveChooser.set(autonomousPerspectiveMap, "Auto Cam");
         dashboardMap.getUserTab().add("Autonomous Perspective", new SendableComponent<>(new ChooserSendable(autonomousPerspectiveChooser)), (metadata) -> new ComponentMetadataHelper(metadata)
-            .setSize(2, 1)
-            .setPosition(9, 4));
+                .setSize(2, 1)
+                .setPosition(9, 4));
 
         visionPacketListener = new VisionPacketListener(
-            clock,
-            Map.of(
-                dimensions.getHatchCameraID(), dimensions.getHatchManipulatorPerspective().getOffset(),
-                dimensions.getCargoCameraID(), dimensions.getCargoManipulatorPerspective().getOffset()
-            ),
-            "10.14.44.5", 5801
+                clock,
+                Map.of(
+                        dimensions.getHatchCameraID(), dimensions.getHatchManipulatorPerspective().getOffset(),
+                        dimensions.getCargoCameraID(), dimensions.getCargoManipulatorPerspective().getOffset()
+                ),
+                "10.14.44.5", 5801
         );
 
         enabledSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
-            lift, cargoIntake, climber, hatchIntake
+                lift, cargoIntake, climber, hatchIntake
         ).clearAllOnEnd(false).canRecycle(true).build();
 
         constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder( // NOTE, without forceUpdateInOrder(true), these will not update in order
-            Actions.createRunForeverRecyclable(drive),
-            Actions.createRunForeverRecyclable(relativeDistanceAccumulator),
-            orientationSystem,
-            defaultTaskSystem,
-            Actions.createRunForever(defaultMatchScheduler),
-            new SwerveCalibrateAction(drive, robotInput),
-            extraAction
+                Actions.createRunForeverRecyclable(drive),
+                Actions.createRunForeverRecyclable(relativeDistanceAccumulator),
+                orientationSystem,
+                defaultTaskSystem,
+                Actions.createRunForever(defaultMatchScheduler),
+                new SwerveCalibrateAction(drive, robotInput),
+                extraAction
         ).clearAllOnEnd(false).canRecycle(false).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
+        dynamicUpdater = new Actions.ActionMultiplexerBuilder().forceUpdateInOrder(true).canRecycle(false).canBeDone(false).build();
 
         swerveDriveAction = new SwerveDriveAction(clock, drive, getOrientation(), taskSystem, robotInput, surroundingProvider, getDimensions());
         teleopAction = new Actions.ActionMultiplexerBuilder(
-            swerveDriveAction,
-            new OperatorAction(this, robotInput)
+                swerveDriveAction,
+                new OperatorAction(this, robotInput)
         ).clearAllOnEnd(false).canBeDone(false).canRecycle(true).build();
         autonomousChooserState = new AutonomousChooserState(
-            dashboardMap,  // this will add stuff to the dashboard
-            clock,
-            new OriginalAutonomousModeCreator(new RobotOriginalAutonActionCreator(this), dimensions),
-            robotInput
+                dashboardMap,  // this will add stuff to the dashboard
+                clock,
+                new OriginalAutonomousModeCreator(new RobotOriginalAutonActionCreator(this), dimensions),
+                robotInput
         );
 
         visionPacketListener.start();
@@ -237,6 +239,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         partUpdater.updateParts(controlConfig);
 
         actionChooser.update(); // update Actions that control the subsystems
+        dynamicUpdater.update();
 
         if(driverStation.isEnabled()){
             enabledSubsystemUpdater.update(); // update subsystems when robot is enabled
@@ -271,7 +274,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
             cargoIntake.stow();
         });
         matchScheduler.schedule(new MatchTime(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END), () -> {
-            new TimedCargoIntake(clock, .4, cargoIntake, 1);
+            dynamicUpdater.add(new TimedCargoIntake(clock, .4, cargoIntake, 1));
         }); // good
         matchScheduler.schedule(new MatchTime(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END), () -> {
             System.out.println("Dropping hatch"); // good
@@ -291,10 +294,10 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     @Override
     public void autonomousInit() {
         actionChooser.setNextAction(
-            new Actions.ActionQueueBuilder(
-                autonomousChooserState.createAutonomousAction(orientationSystem.getOrientation().getOrientation()),
-                teleopAction
-            ) .immediatelyDoNextWhenDone(true) .canBeDone(false) .canRecycle(false) .build()
+                new Actions.ActionQueueBuilder(
+                        autonomousChooserState.createAutonomousAction(orientationSystem.getOrientation().getOrientation()),
+                        teleopAction
+                ) .immediatelyDoNextWhenDone(true) .canBeDone(false) .canRecycle(false) .build()
         );
         final Perspective autoPerspective = autonomousPerspectiveChooser.getSelected();
         if(autoPerspective == dimensions.getHatchManipulatorPerspective()){

@@ -82,7 +82,7 @@ public class TalonSwerveModule implements SwerveModule {
         });
         updateEncoderOffset(moduleConfig);
         dashboardMap.getLiveWindow().add(name, (title, dashboard) -> new ActiveComponentMultiplexer(title, Collections.singletonList(
-            new PropertyActiveComponent("", dashboard.get("raw analog encoder"), ValueProperty.createGetOnly(() -> BasicValue.makeDouble(steer.getSensorCollection().getAnalogInRaw())))
+                new PropertyActiveComponent("", dashboard.get("raw analog encoder"), ValueProperty.createGetOnly(() -> BasicValue.makeDouble(steer.getSensorCollection().getAnalogInRaw())))
         )));
     }
     private void updateEncoderOffset(ValueMap<ModuleConfig> config){

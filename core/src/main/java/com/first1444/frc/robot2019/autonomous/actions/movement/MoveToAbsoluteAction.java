@@ -45,7 +45,7 @@ public class MoveToAbsoluteAction extends SimpleAction {
         Vector2 absolutePosition = absoluteDistanceAccumulator.getPosition();
         double translateSpeed = speedProvider.getSpeed(absolutePosition);
         Vector2 offsetVector = absolutePosition.minus(desiredPosition);
-        if(offsetVector.getMagnitude2() < inchesToMeters(4 * 4)){
+        if(offsetVector.getMagnitude2() < inchesToMeters(4 * 4)){ // TODO
 
         }
         Vector2 translate = offsetVector.getNormalized().times(translateSpeed);
