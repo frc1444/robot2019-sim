@@ -1,4 +1,4 @@
-package com.first1444.frc.robot2019.autonomous.creator;
+package com.first1444.frc.robot2019.autonomous.creator.action;
 
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.autonomous.actions.HatchIntakeAction;

@@ -1,22 +1,25 @@
-package com.first1444.frc.robot2019.autonomous.original;
+package com.first1444.frc.robot2019.autonomous.creator;
 
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.autonomous.creator.action.OperatorActionCreator;
 import com.first1444.frc.robot2019.autonomous.creator.action.RobotOperatorActionCreator;
 import com.first1444.frc.robot2019.autonomous.creator.action.RobotVisionPlacementCreator;
 import com.first1444.frc.robot2019.autonomous.creator.action.VisionPlacementCreator;
-import com.first1444.frc.util.autonomous.creator.*;
+import com.first1444.frc.util.autonomous.creator.DefaultSwerveDriveActionCreator;
+import com.first1444.frc.util.autonomous.creator.FrcLogActionCreator;
+import com.first1444.frc.util.autonomous.creator.LogActionCreator;
+import com.first1444.frc.util.autonomous.creator.SwerveDriveActionCreator;
 
-@Deprecated
-public class RobotOriginalAutonActionCreator implements OriginalAutonActionCreator {
+public class RobotAutonomousActionCreator implements AutonomousActionCreator {
+
     private final LogActionCreator logActionCreator;
-    private final OriginalSwerveDriveActionCreator driveCreator;
+    private final SwerveDriveActionCreator driveCreator;
     private final OperatorActionCreator operatorActionCreator;
     private final VisionPlacementCreator visionPlacementCreator;
 
-    public RobotOriginalAutonActionCreator(Robot robot) {
+    public RobotAutonomousActionCreator(Robot robot) {
         logActionCreator = new FrcLogActionCreator(System.out, robot.getLogger());
-        driveCreator = new OriginalRobotSwerveDriveActionCreator(robot);
+        driveCreator = new DefaultSwerveDriveActionCreator(robot.getDrive(), robot.getOrientation(), robot.getAbsoluteDistanceAccumulator());
         operatorActionCreator = new RobotOperatorActionCreator(robot);
         visionPlacementCreator = new RobotVisionPlacementCreator(robot);
     }
@@ -27,7 +30,7 @@ public class RobotOriginalAutonActionCreator implements OriginalAutonActionCreat
     }
 
     @Override
-    public OriginalSwerveDriveActionCreator getDriveCreator() {
+    public SwerveDriveActionCreator getDriveCreator() {
         return driveCreator;
     }
 
@@ -40,4 +43,5 @@ public class RobotOriginalAutonActionCreator implements OriginalAutonActionCreat
     public VisionPlacementCreator getVisionCreator() {
         return visionPlacementCreator;
     }
+
 }

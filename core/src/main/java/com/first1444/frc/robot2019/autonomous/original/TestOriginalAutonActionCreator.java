@@ -1,9 +1,9 @@
 package com.first1444.frc.robot2019.autonomous.original;
 
-import com.first1444.frc.robot2019.autonomous.creator.OperatorActionCreator;
-import com.first1444.frc.robot2019.autonomous.creator.TestOperatorActionCreator;
-import com.first1444.frc.robot2019.autonomous.creator.TestVisionPlacementCreator;
-import com.first1444.frc.robot2019.autonomous.creator.VisionPlacementCreator;
+import com.first1444.frc.robot2019.autonomous.creator.action.OperatorActionCreator;
+import com.first1444.frc.robot2019.autonomous.creator.action.TestOperatorActionCreator;
+import com.first1444.frc.robot2019.autonomous.creator.action.TestVisionPlacementCreator;
+import com.first1444.frc.robot2019.autonomous.creator.action.VisionPlacementCreator;
 import com.first1444.frc.util.autonomous.creator.FrcLogActionCreator;
 import com.first1444.frc.util.autonomous.creator.LogActionCreator;
 import com.first1444.frc.util.autonomous.creator.OriginalSwerveDriveActionCreator;

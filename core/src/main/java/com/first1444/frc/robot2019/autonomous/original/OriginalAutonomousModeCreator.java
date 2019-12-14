@@ -2,6 +2,7 @@ package com.first1444.frc.robot2019.autonomous.original;
 
 import com.first1444.frc.robot2019.RobotDimensions;
 import com.first1444.frc.robot2019.autonomous.AutonomousModeCreator;
+import com.first1444.frc.robot2019.autonomous.AutonomousSettings;
 import com.first1444.frc.robot2019.autonomous.options.AfterComplete;
 import com.first1444.frc.robot2019.autonomous.options.AutonomousType;
 import com.first1444.frc.robot2019.autonomous.options.LineUpType;
@@ -15,6 +16,7 @@ import com.first1444.sim.api.Rotation2;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.ActionQueue;
 import me.retrodaredevil.action.Actions;
+import org.jetbrains.annotations.NotNull;
 
 import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
 import static java.util.Objects.requireNonNull;
@@ -32,23 +34,17 @@ public class OriginalAutonomousModeCreator implements AutonomousModeCreator {
 
     /**
      *
-     * @param autonomousType The autonomous type
-     * @param startingPosition The starting position of the robot. Can be null
-     * @param gamePieceType The game piece type. Can be null
-     * @param slotLevel The slot level to place the game piece type at. Can be null
-     * @param startingOrientation The starting orientation of the robot
-     * @throws IllegalArgumentException Thrown if either startingPosition, gamePieceType, or level aren't supported by autonomousType
-     * @throws NullPointerException if autonomousType, lineUpType, or startingOrientation is null
      * @return The autonomous action
      */
-    public Action createAction(
-            final AutonomousType autonomousType,
-            final StartingPosition startingPosition,
-            final GamePieceType gamePieceType,
-            final SlotLevel slotLevel,
-            final LineUpType lineUpType,
-            final AfterComplete afterComplete,
-            final Rotation2 startingOrientation){
+    @NotNull
+    public Action createAction(@NotNull AutonomousSettings autonomousSettings){
+        final AutonomousType autonomousType = autonomousSettings.getAutonomousType();
+        final StartingPosition startingPosition = autonomousSettings.getStartingPosition();
+        final GamePieceType gamePieceType = autonomousSettings.getGamePieceType();
+        final SlotLevel slotLevel = autonomousSettings.getSlotLevel();
+        final LineUpType lineUpType = autonomousSettings.getLineUpType();
+        final AfterComplete afterComplete = autonomousSettings.getAfterComplete();
+        final Rotation2 startingOrientation = autonomousSettings.getStartingOrientation();
         requireNonNull(autonomousType); requireNonNull(lineUpType); requireNonNull(startingOrientation);
 
         final ActionQueue actionQueue = new Actions.ActionQueueBuilder()

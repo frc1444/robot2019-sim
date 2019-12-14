@@ -45,7 +45,7 @@ public class AutonomousChooserState {
     private final MutableMappedChooserProvider<SlotLevel> levelChooser;
     private final MutableMappedChooserProvider<LineUpType> lineUpChooser;
     private final MutableMappedChooserProvider<AfterComplete> afterCompleteChooser;
-    private final ValueMap<AutonConfig> autonConfig;
+    private final ValueMap<AutonomousConfigKey> autonomousConfigKeyValueMap;
 
     public AutonomousChooserState(DashboardMap dashboardMap, Clock clock, AutonomousModeCreator autonomousModeCreator, RobotInput robotInput){
         this.clock = clock;
@@ -61,10 +61,10 @@ public class AutonomousChooserState {
         levelChooser = new SimpleMappedChooserProvider<>();
         lineUpChooser = new SimpleMappedChooserProvider<>();
         afterCompleteChooser = new SimpleMappedChooserProvider<>();
-        final var valueMapSendable = new MutableValueMapSendable<>(AutonConfig.class);
+        final var valueMapSendable = new MutableValueMapSendable<>(AutonomousConfigKey.class);
         layout.add("Config", new SendableComponent<>(valueMapSendable), (metadata) -> new ComponentMetadataHelper(metadata)
                 .setProperties(Constants.ROBOT_PREFERENCES_PROPERTIES));
-        autonConfig = valueMapSendable.getMutableValueMap();
+        autonomousConfigKeyValueMap = valueMapSendable.getMutableValueMap();
 
         addAutoOptions();
         updateStartingPositionChooser();
@@ -112,11 +112,11 @@ public class AutonomousChooserState {
                     new Actions.ActionQueueBuilder(
                             new AutonomousInputWaitAction(
                                     clock,
-                                    autonConfig.getDouble(AutonConfig.WAIT_TIME),
+                                    autonomousConfigKeyValueMap.getDouble(AutonomousConfigKey.WAIT_TIME),
                                     () -> robotInput.getAutonomousWaitButton().isDown(),
                                     () -> robotInput.getAutonomousStartButton().isDown()
                             ),
-                            autonomousModeCreator.createAction(type, startingPosition, gamePiece, slotLevel, lineUpType, afterComplete, startingOrientation)
+                            autonomousModeCreator.createAction(new AutonomousSettings(type, startingPosition, gamePiece, slotLevel, lineUpType, afterComplete, startingOrientation))
                     ).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build(),
                     Throwable.class, new PrintWriter(System.err)
             );

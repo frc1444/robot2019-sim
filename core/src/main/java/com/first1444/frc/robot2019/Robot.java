@@ -77,6 +77,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     private final FrcDriverStation driverStation;
     private final FrcLogger logger;
     private final Clock clock;
+    private final DashboardMap dashboardMap;
     private final Lift lift;
     private final CargoIntake cargoIntake;
     private final HatchIntake hatchIntake;
@@ -130,6 +131,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         this.driverStation = driverStation;
         this.logger = logger;
         this.clock = clock;
+        this.dashboardMap = dashboardMap;
         this.cargoIntake = cargoIntake;
         this.climber = climber;
         this.hatchIntake = hatchIntake;
@@ -212,7 +214,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                 new OperatorAction(this, robotInput)
         ).clearAllOnEnd(false).canBeDone(false).canRecycle(true).build();
         autonomousChooserState = new AutonomousChooserState(
-                dashboardMap,  // this will add stuff to the dashboard
+                dashboardMap, // this will add stuff to the dashboard
                 clock,
                 new OriginalAutonomousModeCreator(new RobotOriginalAutonActionCreator(this), dimensions),
                 robotInput
@@ -247,9 +249,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         constantSubsystemUpdater.update(); // update subsystems that are always updated
     }
 
-    /** Called when robot is disabled and in between switching between modes such as teleop and autonomous*/
     @Override
     public void disabledInit(@Nullable FrcMode previousMode) {
+        dashboardMap.getLiveWindow().setEnabled(false);
         actionChooser.setToClearAction();
         if(enabledSubsystemUpdater.isActive()) {
             enabledSubsystemUpdater.end();
@@ -261,7 +263,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         }
     }
 
-    /** Called when going into teleop mode */
     @Override
     public void teleopInit() {
         actionChooser.setNextAction(new Actions.ActionMultiplexerBuilder(
@@ -270,18 +271,18 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         swerveDriveAction.setPerspective(Perspective.DRIVER_STATION);
         soundMap.getTeleopEnable().play();
         matchScheduler.schedule(new MatchTime(1.2, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END), () -> {
-            System.out.println("Stowing cargo intake"); // good
+            System.out.println("Stowing cargo intake");
             cargoIntake.stow();
         });
         matchScheduler.schedule(new MatchTime(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END), () -> {
             dynamicUpdater.add(new TimedCargoIntake(clock, .4, cargoIntake, 1));
-        }); // good
+        });
         matchScheduler.schedule(new MatchTime(.5, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END), () -> {
-            System.out.println("Dropping hatch"); // good
+            System.out.println("Dropping hatch");
             hatchIntake.drop();
         });
         matchScheduler.schedule(new MatchTime(7, MatchTime.Mode.TELEOP, MatchTime.Type.FROM_END), () -> {
-            System.out.println("rumbling"); // good
+            System.out.println("rumbling");
             final var rumble = robotInput.getDriverRumble();
             if(rumble.isConnected()){
                 rumble.rumbleTime(150, .6);
@@ -290,7 +291,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         System.out.println("Scheduled some stuff for end of teleop!");
     }
 
-    /** Called first thing when match starts. Autonomous is active for 15 seconds*/
     @Override
     public void autonomousInit() {
         actionChooser.setNextAction(
@@ -308,7 +308,6 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         swerveDriveAction.setPerspective(autoPerspective);
         soundMap.getAutonomousEnable().play();
     }
-    /** Called constantly during autonomous*/
     @Override
     public void autonomousPeriodic() {
         if(!teleopAction.isActive()){
@@ -321,6 +320,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
     @Override
     public void testInit() {
+        dashboardMap.getLiveWindow().setEnabled(true);
     }
     // endregion
 
@@ -330,6 +330,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     public SwerveDrive getDrive(){ return drive; }
     public Orientation getOrientation(){
         return orientationSystem.getOrientation();
+    }
+    public DistanceAccumulator getAbsoluteDistanceAccumulator(){
+        return absoluteDistanceAccumulator;
     }
 
 

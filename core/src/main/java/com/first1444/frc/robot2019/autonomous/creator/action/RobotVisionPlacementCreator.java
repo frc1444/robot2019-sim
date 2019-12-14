@@ -1,4 +1,4 @@
-package com.first1444.frc.robot2019.autonomous.creator;
+package com.first1444.frc.robot2019.autonomous.creator.action;
 
 import com.first1444.frc.robot2019.Robot;
 import com.first1444.frc.robot2019.autonomous.actions.vision.LineUpCreator;
@@ -15,7 +15,7 @@ import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
 
 public class RobotVisionPlacementCreator implements VisionPlacementCreator {
     /** NOTE: This map does not contain {@link Lift.Position#CARGO_CARGO_SHIP} */
-    public static final Map<SlotLevel, Lift.Position> SLOT_MAP = Map.of(
+    private static final Map<SlotLevel, Lift.Position> SLOT_MAP = Map.of(
         SlotLevel.LEVEL1, Lift.Position.LEVEL1, // although SlotLevel.LEVEL1 may refer to the CARGO_CARGO_SHIP height, when we use this map, it is not for that
         SlotLevel.LEVEL2, Lift.Position.LEVEL2,
         SlotLevel.LEVEL3, Lift.Position.LEVEL3

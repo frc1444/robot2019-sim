@@ -1,4 +1,4 @@
-package com.first1444.frc.robot2019.autonomous.actions.movement;
+package com.first1444.frc.util.autonomous.actions.movement;
 
 import com.first1444.sim.api.MathUtil;
 import com.first1444.sim.api.Rotation2;
@@ -45,8 +45,9 @@ public class MoveToAbsoluteAction extends SimpleAction {
         Vector2 absolutePosition = absoluteDistanceAccumulator.getPosition();
         double translateSpeed = speedProvider.getSpeed(absolutePosition);
         Vector2 offsetVector = absolutePosition.minus(desiredPosition);
-        if(offsetVector.getMagnitude2() < inchesToMeters(4 * 4)){ // TODO
-
+        if(offsetVector.getMagnitude2() < inchesToMeters(4 * 4)){
+            setDone(true);
+            return;
         }
         Vector2 translate = offsetVector.getNormalized().times(translateSpeed);
         final double turnAmount;

@@ -1,9 +1,9 @@
 package com.first1444.frc.util.autonomous.creator;
 
-import com.first1444.frc.robot2019.autonomous.actions.movement.ConstantRotationProvider;
-import com.first1444.frc.robot2019.autonomous.actions.movement.ConstantSpeedProvider;
-import com.first1444.frc.robot2019.autonomous.actions.movement.DesiredRotationProvider;
-import com.first1444.frc.robot2019.autonomous.actions.movement.SpeedProvider;
+import com.first1444.frc.util.autonomous.actions.movement.ConstantRotationProvider;
+import com.first1444.frc.util.autonomous.actions.movement.ConstantSpeedProvider;
+import com.first1444.frc.util.autonomous.actions.movement.DesiredRotationProvider;
+import com.first1444.frc.util.autonomous.actions.movement.SpeedProvider;
 import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Vector2;
 import me.retrodaredevil.action.Action;
