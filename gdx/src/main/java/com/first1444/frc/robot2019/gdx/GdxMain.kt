@@ -33,6 +33,7 @@ private fun createSelectionCreator(uiSkin: Skin, changer: ScreenChanger): Screen
 
 fun createScreen(): ApplicationListener {
     return SimpleGame { changer ->
+        Gdx.graphics.setTitle("Deep Space - RoboSim - 2019")
         val uiSkin = Skin(Gdx.files.classpath("skins/sgx/sgx-ui.json"))
         createSelectionCreator(uiSkin, changer).create(changer)
     }

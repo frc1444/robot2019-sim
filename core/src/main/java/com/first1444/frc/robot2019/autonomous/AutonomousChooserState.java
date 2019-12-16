@@ -20,7 +20,9 @@ import com.first1444.frc.robot2019.input.RobotInput;
 import com.first1444.frc.util.valuemap.ValueMap;
 import com.first1444.frc.util.valuemap.sendable.MutableValueMapSendable;
 import com.first1444.sim.api.Clock;
-import com.first1444.sim.api.Rotation2;
+import com.first1444.sim.api.Transform2;
+import com.first1444.sim.api.Vector2;
+import com.first1444.sim.api.distance.MutableDistanceAccumulator;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.Actions;
 
@@ -34,6 +36,7 @@ import static java.util.Objects.requireNonNull;
 
 public class AutonomousChooserState {
     private final Clock clock;
+    private final MutableDistanceAccumulator absoluteDistanceAccumulator;
     private final AutonomousModeCreator autonomousModeCreator;
     private final RobotInput robotInput;
 
@@ -47,16 +50,17 @@ public class AutonomousChooserState {
     private final MutableMappedChooserProvider<AfterComplete> afterCompleteChooser;
     private final ValueMap<AutonomousConfigKey> autonomousConfigKeyValueMap;
 
-    public AutonomousChooserState(DashboardMap dashboardMap, Clock clock, AutonomousModeCreator autonomousModeCreator, RobotInput robotInput){
+    public AutonomousChooserState(DashboardMap dashboardMap, Clock clock, MutableDistanceAccumulator absoluteDistanceAccumulator, AutonomousModeCreator autonomousModeCreator, RobotInput robotInput){
         this.clock = clock;
+        this.absoluteDistanceAccumulator = absoluteDistanceAccumulator;
         this.autonomousModeCreator = autonomousModeCreator;
         this.robotInput = robotInput;
         final ShuffleboardContainer layout = dashboardMap.getUserTab()
                 .add("Autonomous", ShuffleboardLayoutComponent.LIST, (metadata) -> new ComponentMetadataHelper(metadata)
                         .setSize(2, 5)
                         .setPosition(0, 0));
-        autonomousChooser = new SimpleMappedChooserProvider<>(this::onKeyChange);
-        startingPositionChooser = new SimpleMappedChooserProvider<>();
+        autonomousChooser = new SimpleMappedChooserProvider<>(key -> onAutonomousChange());
+        startingPositionChooser = new SimpleMappedChooserProvider<>(key -> onStartingPositionChange());
         gamePieceChooser = new SimpleMappedChooserProvider<>();
         levelChooser = new SimpleMappedChooserProvider<>();
         lineUpChooser = new SimpleMappedChooserProvider<>();
@@ -86,8 +90,9 @@ public class AutonomousChooserState {
         layout.add("After Complete Chooser", new SendableComponent<>(new ChooserSendable(afterCompleteChooser)),
                 (metadata) -> new ComponentMetadataHelper(metadata).setSize(2, 1).setPosition(0, 5));
         readyToListen = true;
+        onStartingPositionChange();
     }
-    private void onKeyChange(String key){
+    private void onAutonomousChange(){
         if(!readyToListen){
             return;
         }
@@ -97,7 +102,30 @@ public class AutonomousChooserState {
         updateLineUpChooser();
         updateAfterCompleteChooser();
     }
-    public Action createAutonomousAction(Rotation2 startingOrientation){
+    private void onStartingPositionChange(){
+        if(!readyToListen){
+            return;
+        }
+        StartingPosition position = startingPositionChooser.getSelected();
+        final double x;
+        if(position == null) {
+            x = 0;
+        } else if (position == StartingPosition.LEFT) {
+            x = -1.1;
+        } else if (position == StartingPosition.MIDDLE) {
+            x = 0;
+        } else if (position == StartingPosition.MIDDLE_LEFT) {
+            x = -.2;
+        } else if (position == StartingPosition.MIDDLE_RIGHT) {
+            x = .2;
+        } else if (position == StartingPosition.RIGHT) {
+            x = 1.1;
+        } else {
+            throw new UnsupportedOperationException("Unknown position: " + position);
+        }
+        absoluteDistanceAccumulator.setPosition(new Vector2(x, -6.7));
+    }
+    public Action createAutonomousAction(Transform2 startingTransform){
         final AutonomousType type = autonomousChooser.getSelected();
         if(type == null){
             throw new NullPointerException("The autonomous type cannot be null!");
@@ -116,7 +144,7 @@ public class AutonomousChooserState {
                                     () -> robotInput.getAutonomousWaitButton().isDown(),
                                     () -> robotInput.getAutonomousStartButton().isDown()
                             ),
-                            autonomousModeCreator.createAction(new AutonomousSettings(type, startingPosition, gamePiece, slotLevel, lineUpType, afterComplete, startingOrientation))
+                            autonomousModeCreator.createAction(new AutonomousSettings(type, startingPosition, gamePiece, slotLevel, lineUpType, afterComplete), startingTransform)
                     ).canRecycle(false).canBeDone(true).immediatelyDoNextWhenDone(true).build(),
                     Throwable.class, new PrintWriter(System.err)
             );

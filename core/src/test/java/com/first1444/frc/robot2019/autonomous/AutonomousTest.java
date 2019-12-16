@@ -44,7 +44,7 @@ public class AutonomousTest {
 		System.out.println(lineUpType);
 		System.out.println(afterComplete);
 		System.out.println(startingOrientation);
-		runUntilDone(modeCreator.createAction(new AutonomousSettings(autonomousType, startingPosition, gamePieceType, slotLevel, lineUpType, afterComplete, startingOrientation)));
+		runUntilDone(modeCreator.createAction(new AutonomousSettings(autonomousType, startingPosition, gamePieceType, slotLevel, lineUpType, afterComplete, startingOrientation), ));
 		System.out.println();
 	}
 	private static void runUntilDone(Action action){

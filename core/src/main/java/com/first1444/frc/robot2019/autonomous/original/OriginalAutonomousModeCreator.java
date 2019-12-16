@@ -13,6 +13,7 @@ import com.first1444.frc.robot2019.deepspace.SlotLevel;
 import com.first1444.frc.robot2019.subsystems.Lift;
 import com.first1444.sim.api.MathUtil;
 import com.first1444.sim.api.Rotation2;
+import com.first1444.sim.api.Transform2;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.ActionQueue;
 import me.retrodaredevil.action.Actions;
@@ -36,16 +37,16 @@ public class OriginalAutonomousModeCreator implements AutonomousModeCreator {
      *
      * @return The autonomous action
      */
-    @NotNull
-    public Action createAction(@NotNull AutonomousSettings autonomousSettings){
+    @Override
+    public Action createAction(AutonomousSettings autonomousSettings, Transform2 startingTransform){
         final AutonomousType autonomousType = autonomousSettings.getAutonomousType();
         final StartingPosition startingPosition = autonomousSettings.getStartingPosition();
         final GamePieceType gamePieceType = autonomousSettings.getGamePieceType();
         final SlotLevel slotLevel = autonomousSettings.getSlotLevel();
         final LineUpType lineUpType = autonomousSettings.getLineUpType();
         final AfterComplete afterComplete = autonomousSettings.getAfterComplete();
-        final Rotation2 startingOrientation = autonomousSettings.getStartingOrientation();
-        requireNonNull(autonomousType); requireNonNull(lineUpType); requireNonNull(startingOrientation);
+        requireNonNull(autonomousType); requireNonNull(lineUpType); requireNonNull(startingTransform);
+        final Rotation2 startingOrientation = startingTransform.getRotation();
 
         final ActionQueue actionQueue = new Actions.ActionQueueBuilder()
                 .canRecycle(false)
@@ -118,6 +119,7 @@ public class OriginalAutonomousModeCreator implements AutonomousModeCreator {
             actionQueue.add(actionCreator.getDriveCreator().createGoStraight(inchesToMeters(30.0), .7, Rotation2.DEG_90, startingOrientation)); // drive a little
             actionQueue.add(actionCreator.getDriveCreator().createGoStraight(inchesToMeters(30.0), .3, Rotation2.DEG_90, startingOrientation)); // drive slower
             // went 100 inches
+            //noinspection ConstantConditions
             assert gamePieceType == GamePieceType.HATCH : "always true";
             final Rotation2 faceAngle = getManipulatorOffset(GamePieceType.HATCH).rotate90(1); // face the manipulator towards the cargo ship
             if (MathUtil.minDistance(faceAngle.getDegrees(), startingOrientation.getDegrees(), 360) > 5) { // only rotate if we need to

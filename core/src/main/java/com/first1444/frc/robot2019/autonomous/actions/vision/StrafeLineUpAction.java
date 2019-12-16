@@ -1,8 +1,6 @@
 package com.first1444.frc.robot2019.autonomous.actions.vision;
 
 import com.first1444.frc.robot2019.autonomous.actions.DistanceAwayLinkedAction;
-import com.first1444.frc.robot2019.event.EventSender;
-import com.first1444.frc.robot2019.event.SoundEvents;
 import com.first1444.frc.robot2019.sound.SoundMap;
 import com.first1444.sim.api.Clock;
 import com.first1444.sim.api.Rotation2;

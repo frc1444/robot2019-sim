@@ -5,7 +5,7 @@ buildscript {
         junit5Version = "5.5.2"
         gdxVersion = '1.9.10'
         box2DLightsVersion = '1.4'
-        roboSimVersion = "b8befee630"
+        roboSimVersion = "2d1560f5e5"
         abstractControllerLibVersion = "v2.2.6"
         abstractDashboardVersion = "v1.1.0"
     }

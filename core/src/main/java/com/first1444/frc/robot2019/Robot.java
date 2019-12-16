@@ -7,17 +7,24 @@
 
 package com.first1444.frc.robot2019;
 
+import com.first1444.dashboard.ActiveComponent;
+import com.first1444.dashboard.ActiveComponentMultiplexer;
+import com.first1444.dashboard.BasicDashboard;
+import com.first1444.dashboard.advanced.Sendable;
 import com.first1444.dashboard.advanced.implementations.chooser.ChooserSendable;
 import com.first1444.dashboard.advanced.implementations.chooser.MutableMappedChooserProvider;
 import com.first1444.dashboard.advanced.implementations.chooser.SimpleMappedChooserProvider;
 import com.first1444.dashboard.shuffleboard.ComponentMetadataHelper;
 import com.first1444.dashboard.shuffleboard.SendableComponent;
+import com.first1444.dashboard.value.BasicValue;
+import com.first1444.dashboard.value.ValueProperty;
+import com.first1444.dashboard.value.implementations.PropertyActiveComponent;
 import com.first1444.frc.robot2019.actions.OperatorAction;
 import com.first1444.frc.robot2019.actions.SwerveCalibrateAction;
 import com.first1444.frc.robot2019.actions.SwerveDriveAction;
 import com.first1444.frc.robot2019.autonomous.AutonomousChooserState;
-import com.first1444.frc.robot2019.autonomous.original.OriginalAutonomousModeCreator;
-import com.first1444.frc.robot2019.autonomous.original.RobotOriginalAutonActionCreator;
+import com.first1444.frc.robot2019.autonomous.NewAutonomousModeCreator;
+import com.first1444.frc.robot2019.autonomous.creator.RobotAutonomousActionCreator;
 import com.first1444.frc.robot2019.autonomous.actions.TimedCargoIntake;
 import com.first1444.frc.robot2019.input.DefaultRobotInput;
 import com.first1444.frc.robot2019.input.InputUtil;
@@ -28,6 +35,7 @@ import com.first1444.frc.robot2019.subsystems.*;
 import com.first1444.frc.robot2019.subsystems.implementations.DefaultTaskSystem;
 import com.first1444.frc.robot2019.vision.VisionPacketListener;
 import com.first1444.sim.api.Clock;
+import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.distance.*;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDrive;
 import com.first1444.sim.api.drivetrain.swerve.FourWheelSwerveDriveData;
@@ -50,8 +58,10 @@ import me.retrodaredevil.controller.PartUpdater;
 import me.retrodaredevil.controller.implementations.ControllerPartCreator;
 import me.retrodaredevil.controller.output.ControllerRumble;
 import me.retrodaredevil.controller.types.StandardControllerInput;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -168,6 +178,12 @@ public class Robot extends AdvancedIterativeRobotAdapter {
 
         relativeDistanceAccumulator = new DeltaDistanceAccumulator(new OrientationDeltaDistanceCalculator(new SwerveDeltaDistanceCalculator(fourWheelSwerveData), orientationSystem.getOrientation()));
         absoluteDistanceAccumulator = new DefaultMutableDistanceAccumulator(relativeDistanceAccumulator, false);
+        dashboardMap.getUserTab().add("Position", new SendableComponent<>((Sendable<ActiveComponent>) (title, dashboard) -> new ActiveComponentMultiplexer(title,
+                Arrays.asList(
+                        new PropertyActiveComponent("", dashboard.get("x"), ValueProperty.createGetOnly(() -> BasicValue.makeDouble(absoluteDistanceAccumulator.getPosition().getX()))),
+                        new PropertyActiveComponent("", dashboard.get("y"), ValueProperty.createGetOnly(() -> BasicValue.makeDouble(absoluteDistanceAccumulator.getPosition().getY())))
+                )
+        )));
 
         autonomousPerspectiveChooser = new SimpleMappedChooserProvider<>();
         Map<String, Perspective> autonomousPerspectiveMap = new HashMap<>(Map.of(
@@ -196,7 +212,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                 lift, cargoIntake, climber, hatchIntake
         ).clearAllOnEnd(false).canRecycle(true).build();
 
-        constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder( // NOTE, without forceUpdateInOrder(true), these will not update in order
+        constantSubsystemUpdater = new Actions.ActionMultiplexerBuilder(
                 Actions.createRunForeverRecyclable(drive),
                 Actions.createRunForeverRecyclable(relativeDistanceAccumulator),
                 orientationSystem,
@@ -204,7 +220,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                 Actions.createRunForever(defaultMatchScheduler),
                 new SwerveCalibrateAction(drive, robotInput),
                 extraAction
-        ).clearAllOnEnd(false).canRecycle(false).build();
+        ).clearAllOnEnd(false).canRecycle(false).forceUpdateInOrder(true).build();
         actionChooser = Actions.createActionChooser(WhenDone.CLEAR_ACTIVE);
         dynamicUpdater = new Actions.ActionMultiplexerBuilder().forceUpdateInOrder(true).canRecycle(false).canBeDone(false).build();
 
@@ -216,7 +232,9 @@ public class Robot extends AdvancedIterativeRobotAdapter {
         autonomousChooserState = new AutonomousChooserState(
                 dashboardMap, // this will add stuff to the dashboard
                 clock,
-                new OriginalAutonomousModeCreator(new RobotOriginalAutonActionCreator(this), dimensions),
+                absoluteDistanceAccumulator,
+//                new OriginalAutonomousModeCreator(new RobotOriginalAutonActionCreator(this), dimensions),
+                new NewAutonomousModeCreator(new RobotAutonomousActionCreator(this)),
                 robotInput
         );
 
@@ -295,7 +313,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
     public void autonomousInit() {
         actionChooser.setNextAction(
                 new Actions.ActionQueueBuilder(
-                        autonomousChooserState.createAutonomousAction(orientationSystem.getOrientation().getOrientation()),
+                        autonomousChooserState.createAutonomousAction(new Transform2(absoluteDistanceAccumulator.getPosition(), orientationSystem.getOrientation().getOrientation())),
                         teleopAction
                 ) .immediatelyDoNextWhenDone(true) .canBeDone(false) .canRecycle(false) .build()
         );

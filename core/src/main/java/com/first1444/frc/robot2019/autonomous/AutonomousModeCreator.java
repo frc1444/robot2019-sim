@@ -1,7 +1,7 @@
 package com.first1444.frc.robot2019.autonomous;
 
+import com.first1444.sim.api.Transform2;
 import me.retrodaredevil.action.Action;
-import org.jetbrains.annotations.NotNull;
 
 public interface AutonomousModeCreator {
 
@@ -11,6 +11,5 @@ public interface AutonomousModeCreator {
      * @throws NullPointerException if autonomousType, lineUpType, or startingOrientation is null
      * @return The autonomous action
      */
-    @NotNull
-    Action createAction(@NotNull AutonomousSettings autonomousSettings);
+    Action createAction(AutonomousSettings autonomousSettings, Transform2 startingTransform);
 }

@@ -12,7 +12,6 @@ import com.first1444.dashboard.wpi.NetworkTableInstanceBasicDashboard
 import com.first1444.frc.robot2019.DefaultDashboardMap
 import com.first1444.frc.robot2019.Robot
 import com.first1444.frc.robot2019.input.InputUtil
-import com.first1444.frc.robot2019.input.LinuxPS4StandardControllerInputCreator
 import com.first1444.frc.robot2019.subsystems.implementations.DummyCargoIntake
 import com.first1444.frc.robot2019.subsystems.implementations.DummyClimber
 import com.first1444.frc.robot2019.subsystems.implementations.DummyHatchIntake
@@ -41,6 +40,7 @@ import me.retrodaredevil.controller.gdx.GdxControllerPartCreator
 import me.retrodaredevil.controller.gdx.IndexedControllerProvider
 import me.retrodaredevil.controller.implementations.BaseStandardControllerInput
 import me.retrodaredevil.controller.implementations.mappings.DefaultStandardControllerInputCreator
+import me.retrodaredevil.controller.implementations.mappings.LinuxPS4StandardControllerInputCreator
 import me.retrodaredevil.controller.options.OptionValues
 import me.retrodaredevil.controller.output.DisconnectedRumble
 import java.lang.Math.toRadians
@@ -120,7 +120,6 @@ object MyRobotCreator : RobotCreator {
         )
         val provider = IndexedControllerProvider(0)
         val creator = GdxControllerPartCreator(provider, true)
-//        val joystick = BaseStandardControllerInput(DefaultStandardControllerInputCreator(), creator, OptionValues.createImmutableBooleanOptionValue(true), OptionValues.createImmutableBooleanOptionValue(false))
         val joystick = if("sony" in provider.name.toLowerCase()){
             val osName = System.getProperty("os.name").toLowerCase()
             if("nux" in osName || "nix" in osName || "aix" in osName || "mac" in osName) { // only Linux is tested, so feel free to change these if you need to add or remove one
@@ -151,7 +150,7 @@ object MyRobotCreator : RobotCreator {
                     swerveDriveData,
                     DummyLift(reportMap), DummyCargoIntake(reportMap), DummyHatchIntake(reportMap), DummyClimber(reportMap),
                     VisionProvider(entity, 2.0, updateableData.clock),
-                    Actions.createRunForever { bundle.update() }
+                    Actions.createRunForever { }
             )), data.driverStation)
             RobotRunnableMultiplexer(
                     listOf(robotRunnable, object : RobotRunnable {

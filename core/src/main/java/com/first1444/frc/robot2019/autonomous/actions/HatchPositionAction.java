@@ -17,14 +17,6 @@ public class HatchPositionAction extends SimpleAction {
         this.hatchIntakeSupplier = hatchIntakeSupplier;
         this.hatchIntakeAction = hatchIntakeAction;
     }
-    @Deprecated
-    public static Action createReady(Supplier<HatchIntake> hatchIntakeSupplier){
-        return new HatchPositionAction(hatchIntakeSupplier, HatchIntake::readyPosition);
-    }
-    @Deprecated
-    public static Action createStow(Supplier<HatchIntake> hatchIntakeSupplier){
-        return new HatchPositionAction(hatchIntakeSupplier, HatchIntake::stowedPosition);
-    }
     public static Action createReady(HatchIntake hatchIntake){
         return Actions.createRunOnce(hatchIntake::readyPosition);
     }

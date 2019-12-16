@@ -5,6 +5,7 @@ import me.retrodaredevil.controller.implementations.StandardControllerInputCreat
 import me.retrodaredevil.controller.input.InputPart;
 import me.retrodaredevil.controller.input.JoystickPart;
 
+@Deprecated
 public class LinuxPS4StandardControllerInputCreator implements StandardControllerInputCreator {
 
     @Override public InputPart createStart(ControllerPartCreator controller) {

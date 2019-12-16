@@ -10,8 +10,7 @@ import me.retrodaredevil.action.SimpleAction;
 import org.jetbrains.annotations.Nullable;
 
 import static com.first1444.sim.api.MeasureUtil.inchesToMeters;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 import static java.util.Objects.requireNonNull;
 
 public class MoveToAbsoluteAction extends SimpleAction {
@@ -24,11 +23,11 @@ public class MoveToAbsoluteAction extends SimpleAction {
     private final DesiredRotationProvider desiredRotationProvider;
 
     public MoveToAbsoluteAction(
-        SwerveDrive drive,
-        Orientation orientation, DistanceAccumulator absoluteDistanceAccumulator,
-        Vector2 desiredPosition,
-        SpeedProvider speedProvider,
-        @Nullable DesiredRotationProvider desiredRotationProvider
+            SwerveDrive drive,
+            Orientation orientation, DistanceAccumulator absoluteDistanceAccumulator,
+            Vector2 desiredPosition,
+            SpeedProvider speedProvider,
+            @Nullable DesiredRotationProvider desiredRotationProvider
     ) {
         super(true);
         this.drive = requireNonNull(drive);
@@ -44,8 +43,8 @@ public class MoveToAbsoluteAction extends SimpleAction {
         super.onUpdate();
         Vector2 absolutePosition = absoluteDistanceAccumulator.getPosition();
         double translateSpeed = speedProvider.getSpeed(absolutePosition);
-        Vector2 offsetVector = absolutePosition.minus(desiredPosition);
-        if(offsetVector.getMagnitude2() < inchesToMeters(4 * 4)){
+        Vector2 offsetVector = desiredPosition.minus(absolutePosition);
+        if(offsetVector.compareTo(inchesToMeters(4)) < 0){
             setDone(true);
             return;
         }
@@ -58,7 +57,7 @@ public class MoveToAbsoluteAction extends SimpleAction {
             double minChangeDegrees = MathUtil.minChange(rotation.getDegrees(), orientation.getOrientationDegrees(), 360);
             turnAmount = .75 * max(-1, min(1, minChangeDegrees / -40));
         }
-        drive.setControl(translate, turnAmount, 1.0);
+        drive.setControl(translate.rotate(orientation.getOrientation().unaryMinus()), turnAmount, 1.0);
     }
 
     @Override
