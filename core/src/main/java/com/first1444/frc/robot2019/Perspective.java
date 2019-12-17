@@ -32,6 +32,7 @@ public enum Perspective {
         return offset.getRadians();
     }
 
+    /** The rotation relative to the robot that this side is on*/
     public Rotation2 getOffset(){
         return offset;
     }

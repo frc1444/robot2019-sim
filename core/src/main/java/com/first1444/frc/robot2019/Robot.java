@@ -9,7 +9,6 @@ package com.first1444.frc.robot2019;
 
 import com.first1444.dashboard.ActiveComponent;
 import com.first1444.dashboard.ActiveComponentMultiplexer;
-import com.first1444.dashboard.BasicDashboard;
 import com.first1444.dashboard.advanced.Sendable;
 import com.first1444.dashboard.advanced.implementations.chooser.ChooserSendable;
 import com.first1444.dashboard.advanced.implementations.chooser.MutableMappedChooserProvider;
@@ -58,7 +57,6 @@ import me.retrodaredevil.controller.PartUpdater;
 import me.retrodaredevil.controller.implementations.ControllerPartCreator;
 import me.retrodaredevil.controller.output.ControllerRumble;
 import me.retrodaredevil.controller.types.StandardControllerInput;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -234,7 +232,7 @@ public class Robot extends AdvancedIterativeRobotAdapter {
                 clock,
                 absoluteDistanceAccumulator,
 //                new OriginalAutonomousModeCreator(new RobotOriginalAutonActionCreator(this), dimensions),
-                new NewAutonomousModeCreator(new RobotAutonomousActionCreator(this)),
+                new NewAutonomousModeCreator(new RobotAutonomousActionCreator(this), dimensions),
                 robotInput
         );
 

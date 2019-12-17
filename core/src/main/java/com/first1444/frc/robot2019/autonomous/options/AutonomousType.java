@@ -27,23 +27,23 @@ public enum AutonomousType {
             singleton(LineUpType.NO_VISION),
             emptySet()),
 
-    OFF_CENTER_CARGO_SHIP("Off Center Cargo Ship (Goes straight)", asList(StartingPosition.MIDDLE_LEFT, StartingPosition.MIDDLE_RIGHT),
+    OFF_CENTER_CARGO_SHIP("Off Center Cargo Ship (Goes straight)", asList(StartingPosition.MIDDLE, StartingPosition.MIDDLE_LEFT, StartingPosition.MIDDLE_RIGHT),
             singleton(GamePieceType.HATCH),
             singleton(SlotLevel.LEVEL1),
             asList(LineUpType.NO_VISION, LineUpType.USE_VISION),
-            emptySet()),
+            asList(AfterComplete.PREPARE_FOR_DEFENSE, AfterComplete.GO_TO_HAB_CARGO_BAY, AfterComplete.GO_TO_LOADING_STATION_HATCH)),
 
     SIDE_CARGO_SHIP("Side Cargo Ship", asList(StartingPosition.LEFT, StartingPosition.RIGHT),
             asList(GamePieceType.HATCH, GamePieceType.CARGO),
             singleton(SlotLevel.LEVEL1),
             asList(LineUpType.NO_VISION, LineUpType.USE_VISION),
-            asList(AfterComplete.GO_TO_LOADING_STATION_CARGO, AfterComplete.GO_TO_LOADING_STATION_HATCH, AfterComplete.PREPARE_FOR_DEFENSE)),
+            asList(AfterComplete.GO_TO_HAB_CARGO_BAY, AfterComplete.GO_TO_LOADING_STATION_HATCH, AfterComplete.PREPARE_FOR_DEFENSE)),
 
     SIDE_ROCKET("Side Rocket", asList(StartingPosition.LEFT, StartingPosition.RIGHT),
             singleton(GamePieceType.HATCH),
             asList(SlotLevel.LEVEL1, SlotLevel.LEVEL2, SlotLevel.LEVEL3),
             asList(LineUpType.NO_VISION, LineUpType.USE_VISION),
-            asList(AfterComplete.GO_TO_LOADING_STATION_CARGO, AfterComplete.GO_TO_LOADING_STATION_HATCH, AfterComplete.PREPARE_FOR_DEFENSE));
+            asList(AfterComplete.GO_TO_HAB_CARGO_BAY, AfterComplete.GO_TO_LOADING_STATION_HATCH, AfterComplete.PREPARE_FOR_DEFENSE));
 
     private final String name;
     private final Collection<StartingPosition> startingPositions;

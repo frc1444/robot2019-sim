@@ -56,7 +56,7 @@ public class RobotVisionPlacementCreator implements VisionPlacementCreator {
             robot.getClock(),
             robot.getSurroundingProvider(),
             robot.getDrive(), robot.getOrientation(),
-            hatch ? robot.getDimensions().getHatchManipulatorPerspective().getOffset() : robot.getDimensions().getCargoManipulatorPerspective().getOffset(),
+            hatch ? robot.getDimensions().getHatchManipulatorPerspective().getOffset().unaryMinus() : robot.getDimensions().getCargoManipulatorPerspective().getOffset().unaryMinus(),
             Actions.createRunOnce(() -> fail[0] = true),
             Actions.createRunOnce(() -> success[0] = true),
             robot.getSoundMap()

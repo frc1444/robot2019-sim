@@ -95,8 +95,8 @@ public class SwerveDriveAction extends SimpleAction {
                         clock, surroundingProvider,
                         drive, orientation,
                         task == TaskSystem.Task.HATCH
-                                ? dimensions.getHatchManipulatorPerspective().getOffset()
-                                : dimensions.getCargoManipulatorPerspective().getOffset(),
+                                ? dimensions.getHatchManipulatorPerspective().getOffset().unaryMinus()
+                                : dimensions.getCargoManipulatorPerspective().getOffset().unaryMinus(),
                         null, null, SilentSoundMap.INSTANCE
                 ));
             }
