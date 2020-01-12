@@ -1,11 +1,11 @@
 buildscript {
     ext {
         kotlinVersion = '1.3.60'
-        wpiLibVersion = "2019.4.1"
+        wpiLibVersion = "2020.1.2"
         junit5Version = "5.5.2"
         gdxVersion = '1.9.10'
         box2DLightsVersion = '1.4'
-        roboSimVersion = "c2d7a1ed91"
+        roboSimVersion = "cc1f77fdcf"
         abstractControllerLibVersion = "v2.2.6"
         abstractDashboardVersion = "v1.1.0"
     }
@@ -36,7 +36,7 @@ subprojects {
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
         maven { url "https://jitpack.io" }
-        maven { url "https://first.wpi.edu/FRC/roborio/maven/release"}
+        maven { url "https://frcmaven.wpi.edu/artifactory/release" }
     }
     dependencies {
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"

@@ -29,7 +29,7 @@ import com.first1444.sim.gdx.*
 import com.first1444.sim.gdx.drivetrain.swerve.BodySwerveModule
 import com.first1444.sim.gdx.entity.ActorBodyEntity
 import com.first1444.sim.gdx.entity.EntityOrientation
-import com.first1444.sim.gdx.implementations.deepspace2019.surroundings.VisionProvider
+import com.first1444.sim.gdx.implementations.deepspace2019.surroundings.VisionProvider2019
 import com.first1444.sim.gdx.init.RobotCreator
 import com.first1444.sim.gdx.init.UpdateableCreator
 import com.first1444.sim.gdx.sound.GdxSoundCreator
@@ -149,7 +149,7 @@ object MyRobotCreator : RobotCreator {
                     DefaultOrientationHandler(EntityOrientation(entity)),
                     swerveDriveData,
                     DummyLift(reportMap), DummyCargoIntake(reportMap), DummyHatchIntake(reportMap), DummyClimber(reportMap),
-                    VisionProvider(entity, 2.0, updateableData.clock),
+                    VisionProvider2019(entity, 2.0, updateableData.clock),
                     Actions.createRunForever { }
             )), data.driverStation)
             RobotRunnableMultiplexer(

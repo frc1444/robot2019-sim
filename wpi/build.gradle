@@ -34,22 +34,17 @@ deploy {
         }
     }
 }
-//def includeDesktopSupport = true // this isn't used right now, but may be used later?
 
-wpi { // remove for 2020
-    opencvVersion = "3.4.4-5" // temporary fix until new WPILib release
-}
 dependencies {
     implementation wpi.deps.wpilib()
-//    nativeZip wpi.deps.wpilibJni(wpi.platforms.roborio) // add for 2020
-//    nativeDesktopZip wpi.deps.wpilibJni(wpi.platforms.desktop) // add for 2020
+    nativeZip wpi.deps.wpilibJni(wpi.platforms.roborio)
+    nativeDesktopZip wpi.deps.wpilibJni(wpi.platforms.desktop)
 
     implementation wpi.deps.vendor.java()
     nativeZip wpi.deps.vendor.jni(wpi.platforms.roborio)
     nativeDesktopZip wpi.deps.vendor.jni(wpi.platforms.desktop)
 
-//    simulation wpi.deps.sim.gui(wpi.platforms.desktop, false) // add for 2020
-    simulation "edu.wpi.first.halsim:halsim_ds_socket:${wpi.wpilibVersion}:${wpi.platforms.desktop}@zip" // remove for 2020
+    simulation wpi.deps.sim.gui(wpi.platforms.desktop, false)
 
     implementation "com.github.frc1444.robo-sim:wpi:$roboSimVersion"
     implementation "com.github.retrodaredevil.abstract-controller-lib:wpi:$abstractControllerLibVersion"
@@ -61,6 +56,8 @@ dependencies {
 // in order to make them all available at runtime. Also adding the manifest so WPILib
 // knows where to look for our Robot Class.
 jar {
+    dependsOn ":core:jar"
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    //noinspection UnnecessaryQualifiedReference
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
 }
