@@ -11,7 +11,7 @@ import com.first1444.sim.api.Rotation2;
 import com.first1444.sim.api.Transform2;
 import com.first1444.sim.api.Vector2;
 import com.first1444.sim.api.frc.implementations.deepspace.Field2019;
-import com.first1444.sim.api.frc.implementations.deepspace.VisionTarget;
+import com.first1444.sim.api.frc.implementations.deepspace.VisionTarget2019;
 import me.retrodaredevil.action.Action;
 import me.retrodaredevil.action.ActionQueue;
 import me.retrodaredevil.action.Actions;
@@ -58,7 +58,7 @@ public class NewAutonomousModeCreator implements AutonomousModeCreator {
             actionQueue.add(creator.getDriveCreator().createMoveToAbsolute(startingTransform.getPosition().withX(3 * sideMultiplier), .3));
             actionQueue.add(creator.getDriveCreator().createMoveToAbsolute(new Vector2(3 * sideMultiplier, -4), .3));
         } else if(autonomousType == AutonomousType.OFF_CENTER_CARGO_SHIP){
-            final VisionTarget target;
+            final VisionTarget2019 target;
             final int sideMultiplier;
             final boolean left;
             StartingPosition startingPosition = settings.getStartingPosition();

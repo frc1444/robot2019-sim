@@ -23,7 +23,7 @@ private fun createSelectionCreator(uiSkin: Skin, changer: ScreenChanger): Screen
             ))),
             RealConfigScreenCreator(uiSkin) { _, config: RealConfig ->
                 changer.change(FieldScreenCreator(uiSkin, UpdateableCreatorMultiplexer(listOf(
-                        RealUpdateableCreator(uiSkin, config, creator),
+                        RealUpdateableCreator(config, creator),
                         Field2019Creator,
                         exitButtonUpdateableCreator
                 ))).create(changer))
