@@ -84,9 +84,6 @@ public class OperatorAction extends SimpleAction {
             } else if(input.getHatchPivotReadyPreset().isDown()){
                 hatchIntake.readyPosition();
                 taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
-            } else if(input.getHatchPivotGroundPreset().isDown()){
-                hatchIntake.groundPosition();
-                taskSystem.setCurrentTask(TaskSystem.Task.HATCH);
             }
 
             if(input.getHatchGrab().isDown()) {

@@ -39,7 +39,6 @@ public final class Constants {
     /** ID for the Victor SPX for the cargo intake*/
     public static final int CARGO_INTAKE_ID = 14;
     public static final int CARGO_PIVOT_ID = 15;
-    public static final int HATCH_PIVOT_ID = 16;
     // endregion
 
     public static final int BOOM_LIMIT_DIO = 0;

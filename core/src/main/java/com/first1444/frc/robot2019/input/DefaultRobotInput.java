@@ -136,10 +136,6 @@ public class DefaultRobotInput extends SimpleControllerInput implements RobotInp
 
     // region Hatch Pivot Presets
     @Override
-    public InputPart getHatchPivotGroundPreset() {
-        return operatorJoy.getThumbButton();
-    }
-    @Override
     public InputPart getHatchPivotReadyPreset() {
         return operatorJoy.getThumbLeftLower();
     }

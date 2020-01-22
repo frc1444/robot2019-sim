@@ -7,7 +7,6 @@ public interface HatchIntake extends Action {
     void drop();
     void neutralHold();
 
-    void groundPosition();
     void readyPosition();
     void stowedPosition();
 

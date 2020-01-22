@@ -80,7 +80,7 @@ public class WpiRunnableCreator implements RunnableCreator {
         );
         final var lift = new MotorLift();
         final var cargoIntake = new MotorCargoIntake(new VictorSPX(Constants.CARGO_INTAKE_ID), new TalonSRX(Constants.CARGO_PIVOT_ID));
-        final var hatchIntake = new MotorHatchIntake(new TalonSRX(Constants.HATCH_GRAB_ID), new TalonSRX(Constants.HATCH_STOW_ID), new TalonSRX(Constants.HATCH_PIVOT_ID));
+        final var hatchIntake = new MotorHatchIntake(new TalonSRX(Constants.HATCH_GRAB_ID), new TalonSRX(Constants.HATCH_STOW_ID));
         final var climber = new MotorClimber(new TalonSRX(Constants.CLIMB_LIFT_PIVOT_ID), new VictorSPX(Constants.CLIMB_DRIVE_ID));
 
         final BNO055 gyro = new BNO055();

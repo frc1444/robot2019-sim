@@ -44,11 +44,6 @@ public class DummyHatchIntake extends SimpleAction implements HatchIntake {
     }
 
     @Override
-    public void groundPosition() {
-        reportMap.report(PIVOT, "ground position");
-    }
-
-    @Override
     public void readyPosition() {
         reportMap.report(PIVOT, "ready position");
     }

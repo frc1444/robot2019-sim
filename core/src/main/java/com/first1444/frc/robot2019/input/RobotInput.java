@@ -28,7 +28,6 @@ public interface RobotInput extends ControllerInput {
     /** @return An InputPart with a range of [-1..1] where a negative value is intaking and positive is spitting*/
     InputPart getCargoIntakeSpeed();
 
-    InputPart getHatchPivotGroundPreset();
     InputPart getHatchPivotReadyPreset();
     InputPart getHatchPivotStowedPreset();
 
